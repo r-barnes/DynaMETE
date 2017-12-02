@@ -16,16 +16,17 @@ np.set_printoptions(precision=4, suppress=True, linewidth=160)
 ######################
 #CONSTANTS
 ######################
-b0    = 0.0025
-d0    = 0.001
-lam0  = 0
-m     = 0.002
-Emax  = 300000
-EEmax = 1 #EEmax = 1:E/Emax
-w0    = 0.01
-Smeta = 60
-w1    = 0.0003
-d1    = (b0-d0)/Emax
+b0    = 0.0025       #Birth rate per capita
+d0    = 0.001        #Dearth rate per capita
+lam0  = 0            #Speciation rate
+m     = 0.002        #Migration rate
+Emax  = 300000       #Soft maximum for energy (TODO)
+EEmax = 1            #EEmax = 1:E/Emax
+                     #Ontogenic growth dMetabolicRate/dt=w0*e^(2/3)-w1*e (TODO)
+w0    = 0.01         #Ontogenic growth (growth of individual over its lifespan): See above 
+w1    = 0.0003       #Ontogenic growth (growth of individual over its lifespan): See above
+Smeta = 60           #Species richness of the meta community
+d1    = (b0-d0)/Emax #Density dependent contribution to death rate
 meta  = 100 #1000/(E/N) of meta
 
 MAX_TIMESTEP    = 10 #50001
