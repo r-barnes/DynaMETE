@@ -176,24 +176,26 @@ for t in range(1,MAX_TIMESTEP):
   ###################
 
   #Offsets from each column to its left and right neighbours
-  ci = list(range(2,MAX_SPECIES-1)) #Center index
-  li = np.roll(ci,shift= 1)           #Left index
-  ri = np.roll(ci,shift=-1)           #Right index
+  ci = list(range(2,MAX_SPECIES-1))  #Center index
+  li = np.roll(ci,shift= 1)          #Left index
+  ri = np.roll(ci,shift=-1)          #Right index
 
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately followingself.
-  f[t,ci]=(lam0*Svalue[li]*f[t-1,li] + f[t-1,li]*m*(1-Svalue[li]/Smeta)
-  + f[t-1,ci] - lam0*G[1,N]*f[t-1,ci]- f[t-1,ci]*m*(1-Svalue[ci]/Smeta)
-  - f[t-1,ci]*Svalue[ci]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
-  + f[t-1,ri]*Svalue[ri]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+  f[t,ci] = (lam0*Svalue[li]*f[t-1,li] + f[t-1,li]*m*(1-Svalue[li]/Smeta)
+    + f[t-1,ci] - lam0*G[1,N]*f[t-1,ci]- f[t-1,ci]*m*(1-Svalue[ci]/Smeta)
+    - f[t-1,ci]*Svalue[ci]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+    + f[t-1,ri]*Svalue[ri]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
   )
 
   #Outer columns are special cases: First column
-  f[t,0] = f[t-1,0] - f[t-1,0]*m*(1-Svalue[0 ]/Smeta)
-  + f[t-1, 1]*Svalue[ 1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+  f[t,0] = (f[t-1,0] - f[t-1,0]*m*(1-Svalue[0 ]/Smeta)
+    + f[t-1, 1]*Svalue[ 1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+  )
 
   #Special case: last column
-  f[t,-1]=f[t-1,-1] + f[t-1,-2]*m*(1-Svalue[-2]/Smeta)
-  - f[t-1,-1]*Svalue[-1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
-  + lam0*Svalue[-2]*f[t-1,-2]
+  f[t,-1] = (f[t-1,-1] + f[t-1,-2]*m*(1-Svalue[-2]/Smeta)
+    - f[t-1,-1]*Svalue[-1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+    + lam0*Svalue[-2]*f[t-1,-2]
+  )
