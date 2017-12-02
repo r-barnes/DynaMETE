@@ -124,10 +124,6 @@ for t in range(1,MAX_TIMESTEP):
   )
 
   #Special case: last column
-  #NOTE: This is unconverted code using a right-most column that is all zeros. Not sure why that column exists, so we hard-code 0 in the actual code. Ask John about this. TODO
-  #H[t+1,323] = H[t,323] + m*H[t,322]/meta + (d0*H[1,324]^(2/3) + d1*H[1,324]^(5/3)) * avg_N5*H[t,324]/1000 - (d0*H[1,323]^(2/3) + d1*H[1,323]^(5/3)) * avg_N5*H[t,323]/1000 + w0*H[1,322]^(2/3)*avg_N5*H[t,322]/1000 - w1*H[1,322]*H[t,322]/1000
-  
-  #Special case: last column
   H[t,-1] = (H[t-1,-1] + m*H[t-1,-2]/meta 
     - (d0*Evalue[-1]**(2/3) + d1*Evalue[-1]**(5/3)) * expected_N5*H[t-1,-1]/Eint 
     +  w0*Evalue[-2]**(2/3)*expected_N5*H[t-1,-2]/Eint 
