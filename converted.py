@@ -97,13 +97,13 @@ for t in range(1,MAX_TIMESTEP):
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately following.
-  H[t,ci] = (H[t-1,ci] - m*H[t-1,ci]/meta + m*H[t-1,li]/meta + 
-      (d0*Evalue[ri]**(2/3) + d1*Evalue[ri]**(5/3))*expected_N5*H[t-1,ri]/Eint
+  H[t,ci] = (H[t-1,ci] - m*H[t-1,ci]/meta + m*H[t-1,li]/meta
+    +  w0*Evalue[li]**(2/3)                        *expected_N5*H[t-1,li]/Eint
+    -  w1*Evalue[li]                                           *H[t-1,li]/Eint
     - (d0*Evalue[ci]**(2/3) + d1*Evalue[ci]**(5/3))*expected_N5*H[t-1,ci]/Eint
-    -  w0*Evalue[ci]**(2/3)*expected_N5*H[t-1,ci]/Eint 
-    +  w1*Evalue[ci]                   *H[t-1,ci]/Eint
-    +  w0*Evalue[li]**(2/3)*expected_N5*H[t-1,li]/Eint 
-    -  w1*Evalue[li]                   *H[t-1,li]/Eint
+    -  w0*Evalue[ci]**(2/3)                        *expected_N5*H[t-1,ci]/Eint
+    +  w1*Evalue[ci]                                           *H[t-1,ci]/Eint
+    + (d0*Evalue[ri]**(2/3) + d1*Evalue[ri]**(5/3))*expected_N5*H[t-1,ri]/Eint
   )
 
   #######################
@@ -111,22 +111,60 @@ for t in range(1,MAX_TIMESTEP):
   #######################
 
   #Outer columns are special cases: First column
-  H[t,0] = (H[t-1,0] - m*H[t-1,0]/meta 
+  H[t,0] = (H[t-1,0] - m*H[t-1,0]/meta
     + (d0*Evalue[1]**(2/3) + d1*Evalue[1]**(5/3))*expected_N5*H[t-1,1]/Eint
   )
-  
+
   #Special case: Second column
-  H[t,1] = (H[t-1,1] - m*H[t-1,1]/meta + m*H[t-1,0]/meta 
-    + (d0*Evalue[2]**(2/3) + d1*Evalue[2]**(5/3))*expected_N5*H[t-1,2]/Eint
+  H[t,1] = (H[t-1,1] - m*H[t-1,1]/meta + m*H[t-1,0]/meta
     - (d0*Evalue[1]**(2/3) + d1*Evalue[1]**(5/3))*expected_N5*H[t-1,1]/Eint
-    -  w0*Evalue[1]**(2/3)*expected_N5*H[t-1,1]/Eint 
-    +  w1*Evalue[1]                   *H[t-1,1]/Eint
+    -  w0*Evalue[1]**(2/3)                       *expected_N5*H[t-1,1]/Eint
+    +  w1*Evalue[1]                                          *H[t-1,1]/Eint
+    + (d0*Evalue[2]**(2/3) + d1*Evalue[2]**(5/3))*expected_N5*H[t-1,2]/Eint
   )
 
   #Special case: last column
-  H[t,-1] = (H[t-1,-1] + m*H[t-1,-2]/meta 
-    - (d0*Evalue[-1]**(2/3) + d1*Evalue[-1]**(5/3)) * expected_N5*H[t-1,-1]/Eint 
-    +  w0*Evalue[-2]**(2/3)*expected_N5*H[t-1,-2]/Eint 
-    -  w1*Evalue[-2]                   *H[t-1,-2]/Eint
+  H[t,-1] = (H[t-1,-1] + m*H[t-1,-2]/meta
+    +  w0*Evalue[-2]**(2/3)                         * expected_N5*H[t-1,-2]/Eint
+    -  w1*Evalue[-2]                                             *H[t-1,-2]/Eint
+    - (d0*Evalue[-1]**(2/3) + d1*Evalue[-1]**(5/3)) * expected_N5*H[t-1,-1]/Eint
   )
 
+  ###################
+  #Calculate G matrix
+  ###################
+
+  #Offsets from each column to its left and right neighbours
+  ci = list(range(2,MAX_INDIVIDUALS-1)) #Center index
+  li = np.roll(ci,shift= 1)           #Left index
+  ri = np.roll(ci,shift=-1)           #Right index
+
+  #Our strategy is to perform our calculations as though all of the columns are
+  #general cases. This results in incorrect values of the lestmost and rightmost
+  #columns. We will fix these immediately following.
+  G[t,ci] = (G[t-1,ci] - m*(G[t-1,ci] - G[t-1,li])/Nint
+  + G[t-1,li]*(     b0*expected_E1                 ) * Nvalue[li]**(4/3)*np.log(Nvalue[li])**(1/3)/Nint
+  - G[t-1,ci]*((b0+d0)*expected_E1 + d1*expected_E2) * Nvalue[ci]**(4/3)*np.log(Nvalue[ci])**(1/3)/Nint
+  + G[t-1,ri]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[ri]**(4/3)*np.log(Nvalue[ri])**(1/3)/Nint
+  )
+
+  #######################
+  #H matrix special cases
+  #######################
+
+  #Outer columns are special cases: First column
+  G[t,0] = (G[t-1,0] - m*G[t-1,0]/Nint
+  + G[t-1, 1]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[ 1]**(4/3)*np.log(Nvalue[ 1])**(1/3)/Nint
+  )
+  
+  #Special case: Second column
+  G[t,1] = (G[t-1,1]- m*(G[t-1,1]-G[t-1,0])/Nint
+  - G[t-1, 1]*((b0+d0)*expected_E1 + d1*expected_E2) * Nvalue[ 1]**(4/3)*np.log(Nvalue[ 1])**(1/3)/Nint
+  + G[t-1, 2]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[ 2]**(4/3)*np.log(Nvalue[ 2])**(1/3)/Nint
+  )
+
+  #Special case: last column
+  G[t,-1] = (G[t-1,-1] + m*G[t-1,-2]/Nint
+  + G[t-1,-2]*(b0*expected_E1)                  *np.log(Nvalue[-2])**(1/3)*Nvalue[-2]**(4/3)/Nint
+  - G[t-1,-1]*(d0*expected_E1 + d1*expected_E2) *np.log(Nvalue[-1])**(1/3)*Nvalue[-1]**(4/3)/Nint
+  )
