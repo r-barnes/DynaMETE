@@ -189,6 +189,10 @@ for t in range(1,MAX_TIMESTEP):
     + f[t-1,ri]*Svalue[ri]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
   )
 
+  #######################
+  #F matrix special cases
+  #######################
+
   #Outer columns are special cases: First column
   f[t,0] = (f[t-1,0] - f[t-1,0]*m*(1-Svalue[0 ]/Smeta)
     + f[t-1, 1]*Svalue[ 1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
