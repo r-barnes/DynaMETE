@@ -151,7 +151,7 @@ for t in range(1,MAX_TIMESTEP):
   )
 
   #######################
-  #H matrix special cases
+  #G matrix special cases
   #######################
 
   #Outer columns are special cases: First column
