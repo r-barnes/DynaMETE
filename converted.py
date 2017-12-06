@@ -5,6 +5,10 @@
 ######################
 
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+
 
 #precision = Number of decimal places
 #suppress=True => No scientific notation
@@ -68,9 +72,9 @@ sum_H = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to check norm
 sum_G = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to check normalization
 sum_F = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to check normalization
 
-E_avg = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
-N_avg = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
-S_avg = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
+avg_E = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
+avg_N = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
+avg_S = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
 
 
 ######################
@@ -216,99 +220,33 @@ for t in range(1,MAX_TIMESTEP):
   ####################
 
   #see wether the probabilities sum up to 1
-  
-  prob_E = np.sum(H[t, 1:])
-  sum_H[t] = prob_E
-
-  prob_N = np.sum(G[t, 1:])
-  sum_G[t] = prob_N
-
-  prob_S = np.sum(f[t, 1:])
-  sum_F[t] = prob_S
+  sum_H[t] = np.sum(H[t, 1:]) #the sum of the probabilities of Energy at time t
+  sum_G[t] = np.sum(G[t, 1:]) #the sum of the probabilities of Individuals at time t
+  sum_F[t] = np.sum(f[t, 1:]) #the sum of the probabilities of Species at time t
 
   #Calculate <E>, <N>, <S>
-  avg_E = 0
-  avg_N = 0
-  avg_S = 0
+  avg_E[t] = np.sum(Evalue[2:] * H[t, 2:])
+  avg_N[t] = np.sum(Nvalue[2:] * G[t, 2:])
+  avg_S[t] = np.sum(Svalue[2:] * f[t, 2:])
 
-  #Offsets from each column to its left and right neighbours
-  ci = list(range(2,MAX_METABOLIC-1)) #Center index
-  li = np.roll(ci,shift= 1)           #Left index
-  ri = np.roll(ci,shift=-1)           #Right index
+fig, ax = plt.subplots(1,3, sharex=True, sharey=True)
+ax[0].plot(sum_H, label="sum_H")
+ax[0].set_ylim([-0.1,1.1])
+ax[1].plot(sum_G, label="sum_G")
+ax[2].plot(sum_F, label="sum_F")
+plt.legend()
+plt.show()
 
-  avg_E = avg_E + Evalue[ci] * H[t, ci]
+fig, ax = plt.subplots(1,3, sharex=True)
+ax[0].plot(avg_S, label="avg_S")
+ax[1].plot(avg_N, label="avg_N")
+ax[2].plot(avg_S, label="avg_S")
+plt.legend()
+plt.show()
 
-  #Offsets from each column to its left and right neighbours
-  ci = list(range(2,MAX_INDIVIDUALS-1)) #Center index
-  li = np.roll(ci,shift= 1)           #Left index
-  ri = np.roll(ci,shift=-1)           #Right index
-
-  avg_N = avg_N + Nvalue[ci] * G[t, ci]
-
-  #Offsets from each column to its left and right neighbours
-  ci = list(range(2,MAX_SPECIES-1)) #Center index
-  li = np.roll(ci,shift= 1)           #Left index
-  ri = np.roll(ci,shift=-1)           #Right index
-
-  avg_S = avg_S + Svalue[ci] * f[t, ci]
-
-
-  #Code from R
-  for (t in 2:nrow(H)){
-    prob_E = 0
-    for (E in 1:(ncol(H))){
-      prob_E = prob_E + H[t,E]
-    }
-    sum_H[t-1] = prob_E
-  }
-
-  sum_f <- vector(,length = 50001)
-  for (t in 2:nrow(f)){
-    prob_S = 0
-    for (S in 1:(ncol(f))){
-      prob_S = prob_S + f[t,S]
-    }
-    sum_f[t-1] = prob_S
-  }
-
-  sum_G <- vector(,length = 50001)
-  for (t in 2:nrow(G)){
-    prob_N = 0
-    for (N in 1:(ncol(G))){
-      prob_N = prob_N + G[t,N]
-    }
-    sum_G[t-1] = prob_N
-  }
-
-  #Calculate <S>, <N> and <E>
-  S_avg <- vector(,length = 50000)
-  N_avg <- vector(,length = 50000)
-  E_avg <- vector(,length = 50000)
-
-  for (t in 2:50001){
-    avg_S = 0
-    avg_N = 0
-    avg_E = 0
-    for (N in 1:ncol(G)){
-      avg_N = avg_N + G[1,N]*G[t,N]
-      N_avg[t-1] = avg_N
-    }
-    
-    for (S in 1:ncol(f)){
-      avg_S = avg_S + f[1,S]*G[t,S]
-      S_avg[t-1] = avg_S
-    }
-    
-    for(E in 1:ncol(H)){
-      avg_E = avg_E + H[1,E]*H[t,E]
-      E_avg[t-1] = avg_E
-    }
-  } 
-
-
-
-
-
-
-
-
+fig, ax = plt.subplots(1,3, sharex=True)
+ax[0].plot(Svalue,f[-1,:], label="Svalue")
+ax[1].plot(Nvalue,G[-1,:], label="Nvalue")
+ax[2].plot(Evalue,H[-1,:], label="Evalue")
+plt.legend()
+plt.show()
