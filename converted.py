@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
+#from line_profiler import LineProfiler
 
 #precision = Number of decimal places
 #suppress=True => No scientific notation
@@ -33,11 +34,11 @@ Smeta = 60           #Species richness of the meta community
 d1    = (b0-d0)/Emax #Density dependent contribution to death rate
 meta  = 100 #1000/(E/N) of meta
 
-MAX_TIMESTEP    = 10 #50001
+MAX_TIMESTEP    = 5000 #50001
 
-MAX_INDIVIDUALS = 10 #251
-MAX_SPECIES     = 10 # 65
-MAX_METABOLIC   = 10 #324
+MAX_INDIVIDUALS = 100 #251
+MAX_SPECIES     = 65 # 65
+MAX_METABOLIC   = 100 #324
 
 
 
@@ -103,20 +104,20 @@ for t in range(1,MAX_TIMESTEP):
   ###################
 
   #Offsets from each column to its left and right neighbours
-  ci = list(range(2,MAX_METABOLIC-1)) #Center index
-  li = np.roll(ci,shift= 1)           #Left index
-  ri = np.roll(ci,shift=-1)           #Right index
+  #1:-1 = list(range(2,MAX_METABOLIC-1)) #Center index
+  #0:-2 = np.roll(1:-1,shift= 1)           #Left index
+  #2: = np.roll(1:-1,shift=-1)           #Right index
 
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately following.
-  H[t,ci] = (H[t-1,ci] - m*H[t-1,ci]/meta + m*H[t-1,li]/meta
-    +  w0*Evalue[li]**(2/3)                        *expected_N5*H[t-1,li]/Eint
-    -  w1*Evalue[li]                                           *H[t-1,li]/Eint
-    - (d0*Evalue[ci]**(2/3) + d1*Evalue[ci]**(5/3))*expected_N5*H[t-1,ci]/Eint
-    -  w0*Evalue[ci]**(2/3)                        *expected_N5*H[t-1,ci]/Eint
-    +  w1*Evalue[ci]                                           *H[t-1,ci]/Eint
-    + (d0*Evalue[ri]**(2/3) + d1*Evalue[ri]**(5/3))*expected_N5*H[t-1,ri]/Eint
+  H[t,1:-1] = (H[t-1,1:-1] - m*H[t-1,1:-1]/meta + m*H[t-1,0:-2]/meta
+    +  w0*Evalue[0:-2]**(2/3)                          *expected_N5*H[t-1,0:-2]/Eint
+    -  w1*Evalue[0:-2]                                             *H[t-1,0:-2]/Eint
+    - (d0*Evalue[1:-1]**(2/3) + d1*Evalue[1:-1]**(5/3))*expected_N5*H[t-1,1:-1]/Eint
+    -  w0*Evalue[1:-1]**(2/3)                          *expected_N5*H[t-1,1:-1]/Eint
+    +  w1*Evalue[1:-1]                                             *H[t-1,1:-1]/Eint
+    + (d0*Evalue[2:  ]**(2/3) + d1*Evalue[2:]**(5/3))  *expected_N5*H[t-1,2:  ]/Eint
   )
 
   #######################
@@ -148,17 +149,17 @@ for t in range(1,MAX_TIMESTEP):
   ###################
 
   #Offsets from each column to its left and right neighbours
-  ci = list(range(2,MAX_INDIVIDUALS-1)) #Center index
-  li = np.roll(ci,shift= 1)           #Left index
-  ri = np.roll(ci,shift=-1)           #Right index
+  #1:-1 = list(range(2,MAX_INDIVIDUALS-1)) #Center index
+  #0:-2 = np.roll(1:-1,shift= 1)           #Left index
+  #2: = np.roll(1:-1,shift=-1)           #Right index
 
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately following.
-  G[t,ci] = (G[t-1,ci] - m*(G[t-1,ci] - G[t-1,li])/Nint
-  + G[t-1,li]*(     b0*expected_E1                 ) * Nvalue[li]**(4/3)*np.log(Nvalue[li])**(1/3)/Nint
-  - G[t-1,ci]*((b0+d0)*expected_E1 + d1*expected_E2) * Nvalue[ci]**(4/3)*np.log(Nvalue[ci])**(1/3)/Nint
-  + G[t-1,ri]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[ri]**(4/3)*np.log(Nvalue[ri])**(1/3)/Nint
+  G[t,1:-1] = (G[t-1,1:-1] - m*(G[t-1,1:-1] - G[t-1,0:-2])/Nint
+  + G[t-1,0:-2]*(     b0*expected_E1                 ) * Nvalue[0:-2]**(4/3)*np.log(Nvalue[0:-2])**(1/3)/Nint
+  - G[t-1,1:-1]*((b0+d0)*expected_E1 + d1*expected_E2) * Nvalue[1:-1]**(4/3)*np.log(Nvalue[1:-1])**(1/3)/Nint
+  + G[t-1,2:  ]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[2:  ]**(4/3)*np.log(Nvalue[2:  ])**(1/3)/Nint
   )
 
   #######################
@@ -187,17 +188,17 @@ for t in range(1,MAX_TIMESTEP):
   ###################
 
   #Offsets from each column to its left and right neighbours
-  ci = list(range(2,MAX_SPECIES-1))  #Center index
-  li = np.roll(ci,shift= 1)          #Left index
-  ri = np.roll(ci,shift=-1)          #Right index
+  #1:-1 = list(range(2,MAX_SPECIES-1))  #Center index
+  #0:-2 = np.roll(1:-1,shift= 1)          #Left index
+  #2: = np.roll(1:-1,shift=-1)          #Right index
 
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately followingself.
-  f[t,ci] = (lam0*Svalue[li]*f[t-1,li] + f[t-1,li]*m*(1-Svalue[li]/Smeta)
-    + f[t-1,ci] - lam0*f[1,ci]*f[t-1,ci]- f[t-1,ci]*m*(1-Svalue[ci]/Smeta)
-    - f[t-1,ci]*Svalue[ci]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
-    + f[t-1,ri]*Svalue[ri]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+  f[t,1:-1] = (lam0*Svalue[0:-2]*f[t-1,0:-2] + f[t-1,0:-2]*m*(1-Svalue[0:-2]/Smeta)
+    + f[t-1,1:-1] - lam0*f[1,1:-1]*f[t-1,1:-1]- f[t-1,1:-1]*m*(1-Svalue[1:-1]/Smeta)
+    - f[t-1,1:-1]*Svalue[1:-1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+    + f[t-1,2:  ]*Svalue[2:  ]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
   )
 
   #######################
@@ -234,6 +235,7 @@ ax[0].plot(sum_H, label="sum_H")
 ax[0].set_ylim([-0.1,1.1])
 ax[1].plot(sum_G, label="sum_G")
 ax[2].plot(sum_F, label="sum_F")
+fig.suptitle("Normalization Check (should be 1)")
 plt.legend()
 plt.show()
 
@@ -241,6 +243,7 @@ fig, ax = plt.subplots(1,3, sharex=True)
 ax[0].plot(avg_S, label="avg_S")
 ax[1].plot(avg_N, label="avg_N")
 ax[2].plot(avg_S, label="avg_S")
+fig.suptitle("Average of state variables")
 plt.legend()
 plt.show()
 
@@ -248,5 +251,13 @@ fig, ax = plt.subplots(1,3, sharex=True)
 ax[0].plot(Svalue,f[-1,:], label="Svalue")
 ax[1].plot(Nvalue,G[-1,:], label="Nvalue")
 ax[2].plot(Evalue,H[-1,:], label="Evalue")
+fig.suptitle("State variable distribution at final time step")
 plt.legend()
 plt.show()
+
+# lp = LineProfiler()
+# lp_wrapper = lp(main)
+# lp_wrapper()
+# lp.print_stats()
+
+#main()
