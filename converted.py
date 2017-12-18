@@ -196,7 +196,7 @@ for t in range(1,MAX_TIMESTEP):
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately followingself.
   f[t,1:-1] = (lam0*Svalue[0:-2]*f[t-1,0:-2] + f[t-1,0:-2]*m*(1-Svalue[0:-2]/Smeta)
-    + f[t-1,1:-1] - lam0*f[1,1:-1]*f[t-1,1:-1]- f[t-1,1:-1]*m*(1-Svalue[1:-1]/Smeta)
+    + f[t-1,1:-1] - lam0*Svalue[1:-1]*f[t-1,1:-1]- f[t-1,1:-1]*m*(1-Svalue[1:-1]/Smeta)
     - f[t-1,1:-1]*Svalue[1:-1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
     + f[t-1,2:  ]*Svalue[2:  ]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
   )
