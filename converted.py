@@ -32,7 +32,7 @@ w0    = 0.01         #Ontogenic growth (growth of individual over its lifespan):
 w1    = 0.0003       #Ontogenic growth (growth of individual over its lifespan): See above
 Smeta = 60           #Species richness of the meta community
 d1    = (b0-d0)/Emax #Density dependent contribution to death rate
-meta  = 100 #1000/(E/N) of meta
+meta  = 100          #1000/(E/N) of meta
 
 MAX_TIMESTEP    = 5000 #50001
 
@@ -69,13 +69,13 @@ f[0,5] = 1 #100% probability of having 10 species at t=0
 G[0,5] = 1 #100% probability of having 10 individuals at t=0
 H[0,5] = 1 #100% probability of having 10 units of metabolic rate (Watts) at t=0
 
-sum_H = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to check normalization
-sum_G = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to check normalization
-sum_F = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to check normalization
+sum_H = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
+sum_G = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
+sum_F = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
 
-avg_E = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
-avg_N = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
-avg_S = np.array([0 for x in range(MAX_TIMESTEP)]) #Use this later to calculate average
+avg_E = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
+avg_N = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
+avg_S = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
 
 
 ######################
