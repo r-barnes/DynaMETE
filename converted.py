@@ -89,7 +89,6 @@ for t in range(1,MAX_TIMESTEP):
 
   #NOTE: This blows up if Nvalue[0]=0, so we only look at Nvalue[1:]
   logN        = np.log(Nvalue[1:])
-  expected_N1 = np.sum(Nvalue[1:]**(1/3)               *G[t-1,1:]) #expected_N1 = <N^(1/3)>
   expected_N2 = np.sum(1/logN                          *G[t-1,1:]) #expected_N2 = <1/ln(N)>
   expected_N3 = np.sum(1/logN**(1/3)                   *G[t-1,1:]) #expected_N3 = <1/ln(N)^(1/3)>
   expected_N4 = np.sum(logN**(1/3)                     *G[t-1,1:]) #expected_N4 = <ln(N)^(1/3)>
