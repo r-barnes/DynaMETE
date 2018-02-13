@@ -79,6 +79,19 @@ avg_E = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
 avg_N = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
 avg_S = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
 
+######################
+#Initial nomralization
+
+#see wether the probabilities sum up to 1
+sum_H[0] = np.sum(H[0, 1:]) #the sum of the probabilities of Energy at time 0
+sum_G[0] = np.sum(G[0, 1:]) #the sum of the probabilities of Individuals at time 0
+sum_F[0] = np.sum(f[0, 1:]) #the sum of the probabilities of Species at time 0
+
+#Calculate <E>, <N>, <S>
+avg_E[0] = np.sum(Hvalue[2:] * H[0, 2:])
+avg_N[0] = np.sum(Gvalue[2:] * G[0, 2:])
+avg_S[0] = np.sum(Fvalue[2:] * f[0, 2:])
+
 
 ######################
 #TIME LOOP
