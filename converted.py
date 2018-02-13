@@ -36,11 +36,11 @@ Smeta = 60           #Species richness of the meta community
 d1    = (b0-d0)/Emax #Density dependent contribution to death rate
 meta  = 100          #1000/(E/N) of meta
 
-MAX_TIMESTEP    = 5000 #50001
+MAX_TIMESTEP    = 50001 #50001
 
-MAX_INDIVIDUALS = 100 #251
+MAX_INDIVIDUALS = 251 #251
 MAX_SPECIES     = 65 # 65
-MAX_METABOLIC   = 100 #324
+MAX_METABOLIC   = 324 #324
 
 
 
