@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 #linewidth = Number of characters in line before wrapping
 np.set_printoptions(precision=4, suppress=True, linewidth=160)
 
+np.seterr(all='warn')
+#np.seterr(all='raise')
 
 
 ######################
