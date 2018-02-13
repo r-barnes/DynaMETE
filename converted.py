@@ -98,6 +98,11 @@ avg_S[0] = np.sum(Fvalue[2:] * f[0, 2:])
 ######################
 
 for t in range(1,MAX_TIMESTEP):
+  if t%100==0:
+    print('t={0}'.format(t))
+  
+  print('t={0}'.format(t))
+
   ###########################
   #SET UP INTERMEDIATE VALUES
   ###########################
