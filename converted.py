@@ -270,7 +270,7 @@ ax[2].legend()
 fig.suptitle("Average of state variables")
 plt.show()
 
-fig, ax = plt.subplots(1,3, sharex=True)
+fig, ax = plt.subplots(1,3, sharex=False)
 ax[0].plot(Fvalue,f[-1,:], label="Fvalue")
 ax[0].legend()
 ax[1].plot(Gvalue,G[-1,:], label="Gvalue")
