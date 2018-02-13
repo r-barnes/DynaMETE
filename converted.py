@@ -245,9 +245,14 @@ for t in range(1,MAX_TIMESTEP):
   sum_F[t] = np.sum(f[t, 1:]) #the sum of the probabilities of Species at time t
 
   #Calculate <E>, <N>, <S>
-  avg_E[t] = np.sum(Evalue[2:] * H[t, 2:])
-  avg_N[t] = np.sum(Nvalue[2:] * G[t, 2:])
-  avg_S[t] = np.sum(Svalue[2:] * f[t, 2:])
+  avg_E[t] = np.sum(Hvalue[2:] * H[t, 2:])
+  avg_N[t] = np.sum(Gvalue[2:] * G[t, 2:])
+  avg_S[t] = np.sum(Fvalue[2:] * f[t, 2:])
+
+  f[t][f[t]<0] = 0
+  G[t][G[t]<0] = 0
+  H[t][H[t]<0] = 0
+
 
 fig, ax = plt.subplots(1,3, sharex=True, sharey=True)
 ax[0].plot(sum_H, label="sum_H")
