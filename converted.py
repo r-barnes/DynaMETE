@@ -67,9 +67,9 @@ Gvalue = np.array([Nint*x for x in range(MAX_INDIVIDUALS)])
 Hvalue = np.array([Eint*x for x in range(MAX_METABOLIC  )])
 Fvalue = np.array([Sint*x for x in range(MAX_SPECIES    )])
 
-f[0,5] = 1 #100% probability of having 10 species at t=0
-G[0,5] = 1 #100% probability of having 10 individuals at t=0
-H[0,5] = 1 #100% probability of having 10 units of metabolic rate (Watts) at t=0
+f[0,5] = 1 #100% probability of having 5 species at t=0
+G[0,5] = 1 #100% probability of having 50 individuals at t=0
+H[0,5] = 1 #100% probability of having 5000 units of metabolic rate (Watts) at t=0
 
 sum_H = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
 sum_G = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
@@ -289,7 +289,7 @@ fig.suptitle("Normalization Check (should be 1)")
 plt.show()
 
 fig, ax = plt.subplots(1,3, sharex=True)
-ax[0].plot(avg_S, label="avg_S")
+ax[0].plot(avg_E, label="avg_E")
 ax[0].legend()
 ax[1].plot(avg_N, label="avg_N")
 ax[1].legend()
