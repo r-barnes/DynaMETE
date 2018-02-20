@@ -26,7 +26,7 @@ np.seterr(all='warn')
 b0    = 0.0025       #Birth rate per capita
 d0    = 0.001        #Death rate per capita
 lam0  = 0            #Speciation rate
-m     = 0.002        #Migration rate
+m     = 0.001        #Migration rate
 Emax  = 300000       #Soft maximum for energy (TODO)
 w0    = 0.01         #Ontogenic growth (growth of individual over its lifespan): See above
 w1    = 0.0003       #Ontogenic growth (growth of individual over its lifespan): See above
@@ -67,7 +67,7 @@ Fvalue = np.array([Sint*x for x in range(MAX_SPECIES    )])
 
 f[0,5] = 1 #100% probability of having 5 species at t=0
 G[0,5] = 1 #100% probability of having 50 individuals at t=0
-H[0,5] = 1 #100% probability of having 5000 units of metabolic rate (Watts) at t=0
+H[0,10] = 1 #100% probability of having 5000 units of metabolic rate (Watts) at t=0
 
 sum_H = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
 sum_G = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
