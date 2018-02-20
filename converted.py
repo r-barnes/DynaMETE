@@ -28,8 +28,6 @@ d0    = 0.001        #Death rate per capita
 lam0  = 0            #Speciation rate
 m     = 0.002        #Migration rate
 Emax  = 300000       #Soft maximum for energy (TODO)
-EEmax = 1            #EEmax = 1:E/Emax
-                     #Ontogenic growth dMetabolicRate/dt=w0*e^(2/3)-w1*e (TODO)
 w0    = 0.01         #Ontogenic growth (growth of individual over its lifespan): See above
 w1    = 0.0003       #Ontogenic growth (growth of individual over its lifespan): See above
 Smeta = 60           #Species richness of the meta community
