@@ -106,8 +106,12 @@ for t in range(1,MAX_TIMESTEP):
   #SET UP INTERMEDIATE VALUES
   ###########################
 
+  
+  
   #NOTE: This blows up if Gvalue[0]=0, so we only look at Gvalue[1:]
-  logN        = np.log(Gvalue[1:])
+  n_s = avg_N[t-1] / avg_S[t-1] #constant avg_N divided by avg_S
+  logN = np.log(n_s * np.log(n_s * np.log(n_s * np.log(n_s * np.log(n_s))))) #formula to calculate logN
+  #logN        = np.log(Gvalue[1:])
   expected_N2 = np.sum(1/logN                          *G[t-1,1:]) #expected_N2 = <1/ln(N)>
   expected_N3 = np.sum(1/logN**(1/3)                   *G[t-1,1:]) #expected_N3 = <1/ln(N)^(1/3)>
   expected_N4 = np.sum(logN**(1/3)                     *G[t-1,1:]) #expected_N4 = <ln(N)^(1/3)>
