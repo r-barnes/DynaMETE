@@ -49,7 +49,7 @@ for (i in 2:323){
 #avg_N3 = <1/ln(N)^(1/3)>
 #avg_N4 = <ln(N)^(1/3)>
 #avg_N5 = <N^(1/3)/ln(N)^(2/3)
-for (t in 2:50000){
+for (t in 2:50001){
   avg_N1 = 0
   avg_N2 = 0
   avg_N3 = 0
@@ -172,7 +172,7 @@ for (t in 2:50001){
     N_avg[t-1] = avg_N
   }
   
-  for (S in 1:ncol(f)){
+  for (S in 1:(ncol(f)-1)){
     avg_S = avg_S + f[1,S]*G[t,S]
     S_avg[t-1] = avg_S
   }
@@ -224,3 +224,20 @@ for (N in 2:2000){
 }
 
 write.table(ctable, file="ctable.csv",sep=",",row.names=T)
+for (i in 1:50000){
+  for (j in 1:324){
+    if (H[i,j] < 0) print(H[i,j]) 
+  }
+}
+
+for (i in 1:50000){
+  for (j in 1:65){
+    if (f[i,j] < 0) print(f[i,j]) 
+  }
+}
+
+for (i in 1:50000){
+  for (j in 1:251){
+    if (G[i,j] < 0) print(G[i,j]) 
+  }
+}

@@ -32,13 +32,13 @@ w0    = 0.01         #Ontogenic growth (growth of individual over its lifespan):
 w1    = 0.0003       #Ontogenic growth (growth of individual over its lifespan): See above
 Smeta = 60           #Species richness of the meta community
 d1    = (b0-d0)/Emax #Density dependent contribution to death rate
-meta  = 100          #1000/(E/N) of meta
+meta  = 100          #100/(E/N) of meta
 
 MAX_TIMESTEP    = 50001 #50001
 
 MAX_INDIVIDUALS = 251 #251
 MAX_SPECIES     = 65 # 65
-MAX_METABOLIC   = 324 #324
+MAX_METABOLIC   = 3240 #324
 
 
 
@@ -59,7 +59,7 @@ H = np.zeros(shape=(MAX_TIMESTEP, MAX_METABOLIC))   #Total metabolic rate
 #NOTE: The equations below assume that Gvalue[0] = 0 and Hvalue[0] = 0
 #TODO: Try to eliminate Nint and Eint
 Nint   = 10
-Eint   = 1000
+Eint   = 100
 Sint   = 1
 Gvalue = np.array([Nint*x for x in range(MAX_INDIVIDUALS)])
 Hvalue = np.array([Eint*x for x in range(MAX_METABOLIC  )])
@@ -67,7 +67,7 @@ Fvalue = np.array([Sint*x for x in range(MAX_SPECIES    )])
 
 f[0,5] = 1 #100% probability of having 5 species at t=0
 G[0,5] = 1 #100% probability of having 50 individuals at t=0
-H[0,10] = 1 #100% probability of having 5000 units of metabolic rate (Watts) at t=0
+H[0,100] = 1 #100% probability of having 10000 units of metabolic rate (Watts) at t=0
 
 sum_H = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
 sum_G = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
@@ -99,15 +99,15 @@ avg_S[0] = np.sum(Fvalue[2:] * f[0, 2:])
 for t in range(1,MAX_TIMESTEP):
   if t%100==0:
     print('t={0}'.format(t))
-  
+
   print('t={0}'.format(t))
 
   ###########################
   #SET UP INTERMEDIATE VALUES
   ###########################
 
-  
-  
+
+
   #NOTE: This blows up if Gvalue[0]=0, so we only look at Gvalue[1:]
   n_s = avg_N[t-1] / avg_S[t-1] #constant avg_N divided by avg_S
   logN = np.log(n_s * np.log(n_s * np.log(n_s * np.log(n_s * np.log(n_s))))) #formula to calculate logN
@@ -169,7 +169,7 @@ for t in range(1,MAX_TIMESTEP):
 
   #Special case: last column
   H[t,-1] = (
-        H[t-1,-1] 
+        H[t-1,-1]
     + m*H[t-1,-2]/meta
     +  w0*Hvalue[-2]**(2/3)                         * expected_N5*H[t-1,-2]/Eint
     -  w1*Hvalue[-2]                                             *H[t-1,-2]/Eint
@@ -189,7 +189,7 @@ for t in range(1,MAX_TIMESTEP):
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately following.
   G[t,2:-1] = (
-         G[t-1,2:-1] 
+         G[t-1,2:-1]
     - m*(G[t-1,2:-1] - G[t-1,1:-2])/Nint
     +    G[t-1,1:-2]*(     b0*expected_E1                 ) * Gvalue[1:-2]**(4/3)*np.log(Gvalue[1:-2])**(1/3)/Nint
     -    G[t-1,2:-1]*((b0+d0)*expected_E1 + d1*expected_E2) * Gvalue[2:-1]**(4/3)*np.log(Gvalue[2:-1])**(1/3)/Nint
@@ -248,14 +248,14 @@ for t in range(1,MAX_TIMESTEP):
 
   #Outer columns are special cases: First column
   f[t,0] = (
-      f[t-1,0] 
+      f[t-1,0]
     - f[t-1,0]*m*(1-Fvalue[0 ]/Smeta)
     + f[t-1, 1]*Fvalue[ 1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
   )
 
   #Special case: last column
   f[t,-1] = (
-    f[t-1,-1] 
+    f[t-1,-1]
     + f[t-1,-2]*m*(1-Fvalue[-2]/Smeta)
     - f[t-1,-1]*Fvalue[-1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
     + f[t-1,-2]*lam0*Fvalue[-2]
