@@ -44,29 +44,6 @@ MAX_METABOLIC   = 3240         #Number of bins for energy
 
 
 
-#########################
-#PRINT CONFIGURATION INFO
-#########################
-print("c b0              = {0:f}".format(b0))
-print("c d0              = {0:f}".format(d0))
-print("c lam0            = {0:f}".format(lam0))
-print("c m               = {0:f}".format(m))
-print("c Emax            = {0:f}".format(Emax))
-print("c w0              = {0:f}".format(w0))
-print("c w1              = {0:f}".format(w1))
-print("c Smeta           = {0:f}".format(Smeta))
-print("c d1              = {0:f}".format(d1))
-print("c meta            = {0:f}".format(meta))
-print("c Nint            = {0:f}".format(Nint))
-print("c Eint            = {0:f}".format(Eint))
-print("c Sint            = {0:f}".format(Sint))
-print("c MAX_TIMESTEP    = {0:f}".format(MAX_TIMESTEP))
-print("c MAX_INDIVIDUALS = {0:f}".format(MAX_INDIVIDUALS))
-print("c MAX_SPECIES     = {0:f}".format(MAX_SPECIES))
-print("c MAX_METABOLIC   = {0:f}".format(MAX_METABOLIC))
-
-
-
 ######################
 #GLOBALS
 ######################
@@ -112,6 +89,32 @@ sum_F[0] = np.sum(f[0, 1:]) #the sum of the probabilities of Species at time 0
 avg_E[0] = np.sum(Hvalue[2:] * H[0, 2:])
 avg_N[0] = np.sum(Gvalue[2:] * G[0, 2:])
 avg_S[0] = np.sum(Fvalue[2:] * f[0, 2:])
+
+
+
+#########################
+#PRINT CONFIGURATION INFO
+#########################
+print("c b0              = {0:f}".format(b0))
+print("c d0              = {0:f}".format(d0))
+print("c lam0            = {0:f}".format(lam0))
+print("c m               = {0:f}".format(m))
+print("c Emax            = {0:f}".format(Emax))
+print("c w0              = {0:f}".format(w0))
+print("c w1              = {0:f}".format(w1))
+print("c Smeta           = {0:f}".format(Smeta))
+print("c d1              = {0:f}".format(d1))
+print("c meta            = {0:f}".format(meta))
+print("c Nint            = {0:f}".format(Nint))
+print("c Eint            = {0:f}".format(Eint))
+print("c Sint            = {0:f}".format(Sint))
+print("c MAX_TIMESTEP    = {0:f}".format(MAX_TIMESTEP))
+print("c MAX_INDIVIDUALS = {0:f}".format(MAX_INDIVIDUALS))
+print("c MAX_SPECIES     = {0:f}".format(MAX_SPECIES))
+print("c MAX_METABOLIC   = {0:f}".format(MAX_METABOLIC))
+print("c f array dtype   = {0}".format(f.dtype))
+print("c G array dtype   = {0}".format(G.dtype))
+print("c H array dtype   = {0}".format(H.dtype))
 
 
 
