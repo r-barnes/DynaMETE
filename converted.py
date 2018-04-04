@@ -8,7 +8,33 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import os
+import subprocess
 import sys
+
+#Return the git revision as a string. Drawn from the `numpy` library.
+def GitVersion():
+  def _minimal_ext_cmd(cmd):
+    # construct minimal environment
+    env = {}
+    for k in ['SYSTEMROOT', 'PATH']:
+      v = os.environ.get(k)
+      if v is not None:
+        env[k] = v
+    # LANGUAGE is used on win32
+    env['LANGUAGE'] = 'C'
+    env['LANG'] = 'C'
+    env['LC_ALL'] = 'C'
+    out = subprocess.Popen(cmd, stdout = subprocess.PIPE, env=env).communicate()[0]
+    return out
+  try:
+    out = _minimal_ext_cmd(['git', 'rev-parse', 'HEAD'])
+    GIT_REVISION = out.strip().decode('ascii')
+  except OSError:
+    GIT_REVISION = "Unknown"
+  return GIT_REVISION
+
+
 
 #from line_profiler import LineProfiler
 
@@ -95,6 +121,7 @@ avg_S[0] = np.sum(Fvalue[2:] * f[0, 2:])
 #########################
 #PRINT CONFIGURATION INFO
 #########################
+print("A DynaMETE (hash={hash})".format(hash=GitVersion()))
 print("c b0              = {0:f}".format(b0))
 print("c d0              = {0:f}".format(d0))
 print("c lam0            = {0:f}".format(lam0))
