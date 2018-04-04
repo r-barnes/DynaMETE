@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import sys
 
 #from line_profiler import LineProfiler
 
@@ -120,7 +121,7 @@ avg_S[0] = np.sum(Fvalue[2:] * f[0, 2:])
 
 for t in range(1,MAX_TIMESTEP):
   if t%100==0:
-    print('p t = {0}'.format(t))
+    print('p t = {0}'.format(t), file=sys.stderr)
 
 
   ###########################
