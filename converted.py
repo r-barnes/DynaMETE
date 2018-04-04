@@ -23,22 +23,46 @@ np.seterr(all='warn')
 ######################
 #CONSTANTS
 ######################
-b0    = 0.0025       #Birth rate per capita
-d0    = 0.001        #Death rate per capita
-lam0  = 0            #Speciation rate
-m     = 0.001        #Migration rate
-Emax  = 300000       #Soft maximum for energy (TODO)
-w0    = 0.01         #Ontogenic growth (growth of individual over its lifespan): See above
-w1    = 0.0003       #Ontogenic growth (growth of individual over its lifespan): See above
-Smeta = 60           #Species richness of the meta community
-d1    = (b0-d0)/Emax #Density dependent contribution to death rate
-meta  = 100          #100/(E/N) of meta
+b0              = 0.0025       #Birth rate per capita
+d0              = 0.001        #Death rate per capita
+lam0            = 0            #Speciation rate
+m               = 0.001        #Migration rate
+Emax            = 300000       #Soft maximum for energy (TODO)
+w0              = 0.01         #Ontogenic growth (growth of individual over its lifespan): See above
+w1              = 0.0003       #Ontogenic growth (growth of individual over its lifespan): See above
+Smeta           = 60           #Species richness of the meta community
+d1              = (b0-d0)/Emax #Density dependent contribution to death rate
+meta            = 100          #100/(E/N) of meta
+Nint            = 10           #Number of individuals per individual bin
+Eint            = 100          #Number of energy units per energy bin
+Sint            = 1            #Number of species per species bin
+MAX_TIMESTEP    = 50001        #Number of timesteps to take
+MAX_INDIVIDUALS = 251          #Number of bins for individuals
+MAX_SPECIES     = 65           #Number of bins for species
+MAX_METABOLIC   = 3240         #Number of bins for energy
 
-MAX_TIMESTEP    = 50001 #50001
 
-MAX_INDIVIDUALS = 251 #251
-MAX_SPECIES     = 65 # 65
-MAX_METABOLIC   = 3240 #324
+
+#########################
+#PRINT CONFIGURATION INFO
+#########################
+print("m b0              = {0:f}".format(b0))
+print("m d0              = {0:f}".format(d0))
+print("m lam0            = {0:f}".format(lam0))
+print("m m               = {0:f}".format(m))
+print("m Emax            = {0:f}".format(Emax))
+print("m w0              = {0:f}".format(w0))
+print("m w1              = {0:f}".format(w1))
+print("m Smeta           = {0:f}".format(Smeta))
+print("m d1              = {0:f}".format(d1))
+print("m meta            = {0:f}".format(meta))
+print("m Nint            = {0:f}".format(Nint))
+print("m Eint            = {0:f}".format(Eint))
+print("m Sint            = {0:f}".format(Sint))
+print("m MAX_TIMESTEP    = {0:f}".format(MAX_TIMESTEP))
+print("m MAX_INDIVIDUALS = {0:f}".format(MAX_INDIVIDUALS))
+print("m MAX_SPECIES     = {0:f}".format(MAX_SPECIES))
+print("m MAX_METABOLIC   = {0:f}".format(MAX_METABOLIC))
 
 
 
@@ -57,16 +81,12 @@ H = np.zeros(shape=(MAX_TIMESTEP, MAX_METABOLIC))   #Total metabolic rate
 ######################
 
 #NOTE: The equations below assume that Gvalue[0] = 0 and Hvalue[0] = 0
-#TODO: Try to eliminate Nint and Eint
-Nint   = 10
-Eint   = 100
-Sint   = 1
 Gvalue = np.array([Nint*x for x in range(MAX_INDIVIDUALS)])
 Hvalue = np.array([Eint*x for x in range(MAX_METABOLIC  )])
 Fvalue = np.array([Sint*x for x in range(MAX_SPECIES    )])
 
-f[0,5] = 1 #100% probability of having 5 species at t=0
-G[0,5] = 1 #100% probability of having 50 individuals at t=0
+f[0,5]   = 1 #100% probability of having 5 species at t=0
+G[0,5]   = 1 #100% probability of having 50 individuals at t=0
 H[0,100] = 1 #100% probability of having 10000 units of metabolic rate (Watts) at t=0
 
 sum_H = np.zeros(MAX_TIMESTEP) #Use this later to check normalization
@@ -77,8 +97,10 @@ avg_E = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
 avg_N = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
 avg_S = np.zeros(MAX_TIMESTEP) #Use this later to calculate average
 
+
+
 ######################
-#Initial nomralization
+#Initial normalization
 
 #see wether the probabilities sum up to 1
 sum_H[0] = np.sum(H[0, 1:]) #the sum of the probabilities of Energy at time 0
@@ -98,15 +120,12 @@ avg_S[0] = np.sum(Fvalue[2:] * f[0, 2:])
 
 for t in range(1,MAX_TIMESTEP):
   if t%100==0:
-    print('t={0}'.format(t))
+    print('p t = {0}'.format(t))
 
-  print('t={0}'.format(t))
 
   ###########################
   #SET UP INTERMEDIATE VALUES
   ###########################
-
-
 
   #NOTE: This blows up if Gvalue[0]=0, so we only look at Gvalue[1:]
   n_s = avg_N[t-1] / avg_S[t-1] #constant avg_N divided by avg_S
