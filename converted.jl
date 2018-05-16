@@ -72,42 +72,46 @@ avg_S = zeros(MAX_TIMESTEP) #Use this later to calculate average
 #TIME LOOP
 ######################
 
-for t in range(1,MAX_TIMESTEP):
+
+# for t = 2:MAX_TIMESTEP
   ###########################
   #SET UP INTERMEDIATE VALUES
   ###########################
 
   #NOTE: This blows up if Nvalue[0]=0, so we only look at Nvalue[1:]
   logN        = log(Nvalue[1:end])
-  expected_N1 = sum(Nvalue[1:end].^(1/3)            .*G[t-1,1:end]) #expected_N1 = <N^(1/3)>
-  expected_N2 = sum(1/logN                          *G[t-1,1:] #expected_N2 = <1/ln(N)>
-  expected_N3 = sum(1/logN**(1/3)                   *G[t-1,1:] #expected_N3 = <1/ln(N)^(1/3)>
-  expected_N4 = sum(logN**(1/3)                     *G[t-1,1:] #expected_N4 = <ln(N)^(1/3)>
-  expected_N5 = sum(Nvalue[1:]**(1/3) / logN**(2/3) *G[t-1,1:] #expected_N5 = <N^(1/3)/ln(N)^(2/3)
+  expected_N1 = sum(Nvalue[1:end].^(1/3)               .*G[t-1,1:end]) #expected_N1 = <N^(1/3)>
+  expected_N2 = sum(1./logN                             .*G[t-1,1:end]) #expected_N2 = <1/ln(N)>
+  expected_N3 = sum(1./logN.^(1/3)                      .*G[t-1,1:end]) #expected_N3 = <1/ln(N)^(1/3)>
+  expected_N4 = sum(logN.^(1/3)                        .*G[t-1,1:end]) #expected_N4 = <ln(N)^(1/3)>
+  expected_N5 = sum(Nvalue[1:end].^(1/3) / logN.^(2/3) .*G[t-1,1:end]) #expected_N5 = <N^(1/3)/ln(N)^(2/3)
 
   #NOTE: This blows up if Evalue[0]=0, so we only look at Evalue[1:]
-  expected_E1 = np.sum(Evalue[1:]**(-1/3) * H[t-1,1:])   #avg_E1 = <E^(-1/3)>
-  expected_E2 = np.sum(Evalue[1:]**( 2/3) * H[t-1,1:])   #avg_E2 = <E^(2/3)>
+  expected_E1 = sum(Evalue[1:end].^(-1/3) * H[t-1,1:end])   #avg_E1 = <E^(-1/3)>
+  expected_E2 = sum(Evalue[1:end].^( 2/3) * H[t-1,1:end])   #avg_E2 = <E^(2/3)>
 
   ###################
   #Calculate H matrix
   ###################
 
   #Offsets from each column to its left and right neighbours
-  #1:-1 = list(range(2,MAX_METABOLIC-1)) #Center index
-  #0:-2 = np.roll(1:-1,shift= 1)           #Left index
-  #2: = np.roll(1:-1,shift=-1)           #Right index
+  #2:end-1 = list(range(2,MAX_METABOLIC-1)) #Center index
+  #1:end-2 = np.roll(2:end-1,shift= 1)           #Left index
+  #2: = np.roll(2:end-1,shift=-1)           #Right index
 
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately following.
-  H[t,1:-1] = (H[t-1,1:-1] - m*H[t-1,1:-1]/meta + m*H[t-1,0:-2]/meta
-    +  w0*Evalue[0:-2]**(2/3)                          *expected_N5*H[t-1,0:-2]/Eint
-    -  w1*Evalue[0:-2]                                             *H[t-1,0:-2]/Eint
-    - (d0*Evalue[1:-1]**(2/3) + d1*Evalue[1:-1]**(5/3))*expected_N5*H[t-1,1:-1]/Eint
-    -  w0*Evalue[1:-1]**(2/3)                          *expected_N5*H[t-1,1:-1]/Eint
-    +  w1*Evalue[1:-1]                                             *H[t-1,1:-1]/Eint
-    + (d0*Evalue[2:  ]**(2/3) + d1*Evalue[2: ]**(5/3)) *expected_N5*H[t-1,2:  ]/Eint
+  H[t,2:end-1] = (
+        H[t-1,2:end-1] 
+    - m*H[t-1,2:end-1]/meta 
+    + m*H[t-1,1:end-2]/meta
+    +  w0*Evalue[1:end-2].^(2/3)                          *expected_N5*H[t-1,1:end-2]/Eint
+    -  w1*Evalue[1:end-2]                                             *H[t-1,1:end-2]/Eint
+    - (d0*Evalue[2:end-1].^(2/3) + d1*Evalue[2:end-1].^(5/3))*expected_N5*H[t-1,2:end-1]/Eint
+    -  w0*Evalue[2:end-1].^(2/3)                          *expected_N5*H[t-1,2:end-1]/Eint
+    +  w1*Evalue[2:end-1]                                             *H[t-1,2:end-1]/Eint
+    + (d0*Evalue[3:end].^(2/3) + d1*Evalue[3:end].^(5/3)) *expected_N5*H[t-1,3:end]/Eint
   )
 
   #######################
@@ -116,22 +120,22 @@ for t in range(1,MAX_TIMESTEP):
 
   #Outer columns are special cases: First column
   H[t,0] = (H[t-1,0] - m*H[t-1,0]/meta
-    + (d0*Evalue[1]**(2/3) + d1*Evalue[1]**(5/3))*expected_N5*H[t-1,1]/Eint
+    + (d0*Evalue[1].^(2/3) + d1*Evalue[1].^(5/3))*expected_N5*H[t-1,1]/Eint
   )
 
   #Special case: Second column
   H[t,1] = (H[t-1,1] - m*H[t-1,1]/meta + m*H[t-1,0]/meta
-    - (d0*Evalue[1]**(2/3) + d1*Evalue[1]**(5/3))*expected_N5*H[t-1,1]/Eint
-    -  w0*Evalue[1]**(2/3)                       *expected_N5*H[t-1,1]/Eint
+    - (d0*Evalue[1].^(2/3) + d1*Evalue[1].^(5/3))*expected_N5*H[t-1,1]/Eint
+    -  w0*Evalue[1].^(2/3)                       *expected_N5*H[t-1,1]/Eint
     +  w1*Evalue[1]                                          *H[t-1,1]/Eint
-    + (d0*Evalue[2]**(2/3) + d1*Evalue[2]**(5/3))*expected_N5*H[t-1,2]/Eint
+    + (d0*Evalue[2].^(2/3) + d1*Evalue[2].^(5/3))*expected_N5*H[t-1,2]/Eint
   )
 
   #Special case: last column
   H[t,-1] = (H[t-1,-1] + m*H[t-1,-2]/meta
-    +  w0*Evalue[-2]**(2/3)                         * expected_N5*H[t-1,-2]/Eint
+    +  w0*Evalue[-2].^(2/3)                         * expected_N5*H[t-1,-2]/Eint
     -  w1*Evalue[-2]                                             *H[t-1,-2]/Eint
-    - (d0*Evalue[-1]**(2/3) + d1*Evalue[-1]**(5/3)) * expected_N5*H[t-1,-1]/Eint
+    - (d0*Evalue[-1].^(2/3) + d1*Evalue[-1].^(5/3)) * expected_N5*H[t-1,-1]/Eint
   )
 
   ###################
@@ -139,17 +143,17 @@ for t in range(1,MAX_TIMESTEP):
   ###################
 
   #Offsets from each column to its left and right neighbours
-  #1:-1 = list(range(2,MAX_INDIVIDUALS-1)) #Center index
-  #0:-2 = np.roll(1:-1,shift= 1)           #Left index
-  #2: = np.roll(1:-1,shift=-1)           #Right index
+  #2:end-1 = list(range(2,MAX_INDIVIDUALS-1)) #Center index
+  #1:end-2 = np.roll(2:end-1,shift= 1)           #Left index
+  #2: = np.roll(2:end-1,shift=-1)           #Right index
 
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately following.
-  G[t,1:-1] = (G[t-1,1:-1] - m*(G[t-1,1:-1] - G[t-1,0:-2])/Nint
-    + G[t-1,0:-2]*(     b0*expected_E1                 ) * Nvalue[0:-2]**(4/3)*np.log(Nvalue[0:-2])**(1/3)/Nint
-    - G[t-1,1:-1]*((b0+d0)*expected_E1 + d1*expected_E2) * Nvalue[1:-1]**(4/3)*np.log(Nvalue[1:-1])**(1/3)/Nint
-    + G[t-1,2:  ]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[2:  ]**(4/3)*np.log(Nvalue[2:  ])**(1/3)/Nint
+  G[t,2:end-1] = (G[t-1,2:end-1] - m*(G[t-1,2:end-1] - G[t-1,1:end-2])/Nint
+    + G[t-1,1:end-2]*(     b0*expected_E1                 ) * Nvalue[1:end-2].^(4/3)*np.log(Nvalue[1:end-2]).^(1/3)/Nint
+    - G[t-1,2:end-1]*((b0+d0)*expected_E1 + d1*expected_E2) * Nvalue[2:end-1].^(4/3)*np.log(Nvalue[2:end-1]).^(1/3)/Nint
+    + G[t-1,3:end]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[3:end].^(4/3)*np.log(Nvalue[3:end]).^(1/3)/Nint
   )
 
   #######################
@@ -158,19 +162,19 @@ for t in range(1,MAX_TIMESTEP):
 
   #Outer columns are special cases: First column
   G[t,0] = (G[t-1,0] - m*G[t-1,0]/Nint
-    + G[t-1, 1]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[ 1]**(4/3)*np.log(Nvalue[ 1])**(1/3)/Nint
+    + G[t-1, 1]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[ 1].^(4/3)*np.log(Nvalue[ 1]).^(1/3)/Nint
   )
 
   #Special case: Second column
   G[t,1] = (G[t-1,1]- m*(G[t-1,1]-G[t-1,0])/Nint
-    - G[t-1, 1]*((b0+d0)*expected_E1 + d1*expected_E2) * Nvalue[ 1]**(4/3)*np.log(Nvalue[ 1])**(1/3)/Nint
-    + G[t-1, 2]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[ 2]**(4/3)*np.log(Nvalue[ 2])**(1/3)/Nint
+    - G[t-1, 1]*((b0+d0)*expected_E1 + d1*expected_E2) * Nvalue[ 1].^(4/3)*np.log(Nvalue[ 1]).^(1/3)/Nint
+    + G[t-1, 2]*(     d0*expected_E1 + d1*expected_E2) * Nvalue[ 2].^(4/3)*np.log(Nvalue[ 2]).^(1/3)/Nint
   )
 
   #Special case: last column
   G[t,-1] = (G[t-1,-1] + m*G[t-1,-2]/Nint
-    + G[t-1,-2]*(b0*expected_E1)                  *np.log(Nvalue[-2])**(1/3)*Nvalue[-2]**(4/3)/Nint
-    - G[t-1,-1]*(d0*expected_E1 + d1*expected_E2) *np.log(Nvalue[-1])**(1/3)*Nvalue[-1]**(4/3)/Nint
+    + G[t-1,-2]*(b0*expected_E1)                  *np.log(Nvalue[-2]).^(1/3)*Nvalue[-2].^(4/3)/Nint
+    - G[t-1,-1]*(d0*expected_E1 + d1*expected_E2) *np.log(Nvalue[-1]).^(1/3)*Nvalue[-1].^(4/3)/Nint
   )
 
   ###################
@@ -178,17 +182,17 @@ for t in range(1,MAX_TIMESTEP):
   ###################
 
   #Offsets from each column to its left and right neighbours
-  #1:-1 = list(range(2,MAX_SPECIES-1))  #Center index
-  #0:-2 = np.roll(1:-1,shift= 1)          #Left index
-  #2: = np.roll(1:-1,shift=-1)          #Right index
+  #2:end-1 = list(range(2,MAX_SPECIES-1))  #Center index
+  #1:end-2 = np.roll(2:end-1,shift= 1)          #Left index
+  #2: = np.roll(2:end-1,shift=-1)          #Right index
 
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately followingself.
-  f[t,1:-1] = (lam0*Svalue[0:-2]*f[t-1,0:-2] + f[t-1,0:-2]*m*(1-Svalue[0:-2]/Smeta)
-    + f[t-1,1:-1] - lam0*Svalue[1:-1]*f[t-1,1:-1]- f[t-1,1:-1]*m*(1-Svalue[1:-1]/Smeta)
-    - f[t-1,1:-1]*Svalue[1:-1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
-    + f[t-1,2:  ]*Svalue[2:  ]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+  f[t,2:end-1] = (lam0*Svalue[1:end-2]*f[t-1,1:end-2] + f[t-1,1:end-2]*m*(1-Svalue[1:end-2]/Smeta)
+    + f[t-1,2:end-1] - lam0*Svalue[2:end-1]*f[t-1,2:end-1]- f[t-1,2:end-1]*m*(1-Svalue[2:end-1]/Smeta)
+    - f[t-1,2:end-1]*Svalue[2:end-1].^(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+    + f[t-1,3:end]*Svalue[3:end].^(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
   )
 
   #######################
@@ -197,12 +201,12 @@ for t in range(1,MAX_TIMESTEP):
 
   #Outer columns are special cases: First column
   f[t,0] = (f[t-1,0] - f[t-1,0]*m*(1-Svalue[0 ]/Smeta)
-    + f[t-1, 1]*Svalue[ 1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+    + f[t-1, 1]*Svalue[ 1].^(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
   )
 
   #Special case: last column
   f[t,-1] = (f[t-1,-1] + f[t-1,-2]*m*(1-Svalue[-2]/Smeta)
-    - f[t-1,-1]*Svalue[-1]**(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
+    - f[t-1,-1]*Svalue[-1].^(4/3)*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
     + lam0*Svalue[-2]*f[t-1,-2]
   )
 
@@ -211,14 +215,15 @@ for t in range(1,MAX_TIMESTEP):
   ####################
 
   #see wether the probabilities sum up to 1
-  sum_H[t] = np.sum(H[t, 1:]) #the sum of the probabilities of Energy at time t
-  sum_G[t] = np.sum(G[t, 1:]) #the sum of the probabilities of Individuals at time t
-  sum_F[t] = np.sum(f[t, 1:]) #the sum of the probabilities of Species at time t
+  sum_H[t] = np.sum(H[t, 2:end]) #the sum of the probabilities of Energy at time t
+  sum_G[t] = np.sum(G[t, 2:end]) #the sum of the probabilities of Individuals at time t
+  sum_F[t] = np.sum(f[t, 2:end]) #the sum of the probabilities of Species at time t
 
   #Calculate <E>, <N>, <S>
-  avg_E[t] = np.sum(Evalue[2:] * H[t, 2:])
-  avg_N[t] = np.sum(Nvalue[2:] * G[t, 2:])
-  avg_S[t] = np.sum(Svalue[2:] * f[t, 2:])
+  avg_E[t] = np.sum(Evalue[3:end] * H[t, 3:end])
+  avg_N[t] = np.sum(Nvalue[3:end] * G[t, 3:end])
+  avg_S[t] = np.sum(Svalue[3:end] * f[t, 3:end])
+# end
 
 fig, ax = plt.subplots(1,3, sharex=True, sharey=True)
 ax[0].plot(sum_H, label="sum_H")
