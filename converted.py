@@ -161,15 +161,19 @@ for t in range(1,MAX_TIMESTEP):
   #NOTE: This blows up if Gvalue[0]=0, so we only look at Gvalue[1:]
   n_s = avg_N[t-1] / avg_S[t-1] #constant avg_N divided by avg_S
   logN = np.log(n_s * np.log(n_s * np.log(n_s * np.log(n_s * np.log(n_s))))) #formula to calculate logN
+  # print(avg_N[t-1],avg_S[t-1],n_s,logN) #TODO
   #logN        = np.log(Gvalue[1:])
-  expected_N2 = np.sum(1/logN                          *G[t-1,1:]) #expected_N2 = <1/ln(N)>
-  expected_N3 = np.sum(1/logN**(1/3)                   *G[t-1,1:]) #expected_N3 = <1/ln(N)^(1/3)>
-  expected_N4 = np.sum(logN**(1/3)                     *G[t-1,1:]) #expected_N4 = <ln(N)^(1/3)>
-  expected_N5 = np.sum(Gvalue[1:]**(1/3) / logN**(2/3) *G[t-1,1:]) #expected_N5 = <N^(1/3)/ln(N)^(2/3)
+  expected_N2 = np.sum(1/logN                      *G[t-1,:]) #expected_N2 = <1/ln(N)>
+  expected_N3 = np.sum(1/logN**(1/3)               *G[t-1,:]) #expected_N3 = <1/ln(N)^(1/3)>
+  expected_N4 = np.sum(logN**(1/3)                 *G[t-1,:]) #expected_N4 = <ln(N)^(1/3)>
+  expected_N5 = np.sum(Gvalue**(1/3) / logN**(2/3) *G[t-1,:]) #expected_N5 = <N^(1/3)/ln(N)^(2/3)
 
   #NOTE: This blows up if Hvalue[0]=0, so we only look at Hvalue[1:]
-  expected_E1 = np.sum(Hvalue[1:]**(-1/3) * H[t-1,1:])   #avg_E1 = <E^(-1/3)>
-  expected_E2 = np.sum(Hvalue[1:]**( 2/3) * H[t-1,1:])   #avg_E2 = <E^(2/3)>
+  expected_E1 = 1/np.sum(Hvalue**(1/3) * H[t-1,:])   #avg_E1 = <E^(-1/3)>
+  #expected_E1 = np.sum(Hvalue[1:]**(-1/3) * H[t-1,1:])   #avg_E1 = <E^(-1/3)>
+  expected_E2 = np.sum(Hvalue**( 2/3)     * H[t-1,:])    #avg_E2 = <E^(2/3)>
+
+  # print("{:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f} {:10.5f}".format(avg_N[t-1],avg_S[t-1],n_s,logN, expected_N2, expected_N3, expected_N4, expected_N5, expected_E1, expected_E2))
 
   ###################
   #Calculate H matrix
