@@ -230,11 +230,6 @@ for t in range(1,MAX_TIMESTEP):
   #Calculate G matrix
   ###################
 
-  #Offsets from each column to its left and right neighbours
-  #1:-1 = list(range(2,MAX_INDIVIDUALS-1)) #Center index
-  #0:-2 = np.roll(1:-1,shift= 1)           #Left index
-  #2: = np.roll(1:-1,shift=-1)           #Right index
-
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
   #columns. We will fix these immediately following.
@@ -276,8 +271,6 @@ for t in range(1,MAX_TIMESTEP):
   ###################
   #Calculate F matrix
   ###################
-
-  #Offsets from each column to its left and right neighbours
 
   #Our strategy is to perform our calculations as though all of the columns are
   #general cases. This results in incorrect values of the lestmost and rightmost
