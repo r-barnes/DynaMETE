@@ -152,6 +152,10 @@ class DynaSolver {
     Gsave.push_back(G);
     Hsave.push_back(H);
     savetimes.push_back(t);
+  void CopyToPrev() {
+    for(unsigned int i=0;i<MAX_SPECIES;    i++) fprev[i] = f[i];
+    for(unsigned int i=0;i<MAX_INDIVIDUALS;i++) Gprev[i] = G[i];
+    for(unsigned int i=0;i<MAX_METABOLIC;  i++) Hprev[i] = H[i];
   }
 
  public:
@@ -181,9 +185,7 @@ class DynaSolver {
     G[5]   = 1;
     H[100] = 1;
 
-    fprev = f;
-    Gprev = G;
-    Hprev = H;
+    CopyToPrev();
 
     CheckInitialization();
 
@@ -396,9 +398,7 @@ class DynaSolver {
     // G[t][G[t]<0] = 0
     // H[t][H[t]<0] = 0
 
-    fprev = f;
-    Gprev = G;
-    Hprev = H;
+    CopyToPrev();
   }
 
   void run() {
