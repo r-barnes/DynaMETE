@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/filter/zlib.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
+// #include <boost/iostreams/filtering_stream.hpp>
+// #include <boost/iostreams/filter/zlib.hpp>
+// #include <boost/iostreams/filter/gzip.hpp>
 
 
 class DynaSolver {
@@ -61,12 +61,12 @@ class DynaSolver {
   }
 
  public:
-  void saveAll(const std::string filename) const {
-    std::ofstream outfile(filename, std::ios::out | std::ios::binary);
+  void saveAll(const std::string filename) {
+    std::ofstream fout(filename, std::ios::out | std::ios::binary);
 
-    boost::iostreams::filtering_ostream fout;
-    fout.push(boost::iostreams::gzip_compressor());
-    fout.push(outfile);
+    // boost::iostreams::filtering_ostream fout;
+    // fout.push(boost::iostreams::gzip_compressor());
+    // fout.push(outfile);
 
     const unsigned int timesteps  = sum_H.size();
     const unsigned int savepoints = Fsave.size();
