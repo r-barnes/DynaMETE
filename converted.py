@@ -4,6 +4,7 @@
 #PACKAGE CONFIGURATION
 ######################
 
+from numba import jit
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
@@ -11,6 +12,7 @@ import matplotlib.pyplot as plt
 import os
 import subprocess
 import sys
+import code
 
 #Return the git revision as a string. Drawn from the `numpy` library.
 def GitVersion():
@@ -33,6 +35,25 @@ def GitVersion():
   except OSError:
     GIT_REVISION = "Unknown"
   return GIT_REVISION
+
+
+def Zeroify(arr):
+  #code.interact(local=locals())
+  who = np.where(np.logical_and(0<arr,arr<1e-20))[0]
+  arr[who] = 0
+  wht = who-1; wht = wht[np.logical_and(0<wht,wht<len(arr))]; arr[wht]=0
+  wht = who+1; wht = wht[np.logical_and(0<wht,wht<len(arr))]; arr[wht]=0
+  # wht = who+2; wht = wht[np.logical_and(0<wht,wht<len(arr))]; arr[wht]=0
+  # wht = who-2; wht = wht[np.logical_and(0<wht,wht<len(arr))]; arr[wht]=0
+
+# @jit
+# def Zeroify(arr):
+#   size = len(arr)
+#   for i in range(size):
+#     if 0<arr[i] and arr[i]<0.1:
+#       arr[i-1] = 0
+#       arr[i]   = 0
+#       arr[i+1] = 0
 
 
 
