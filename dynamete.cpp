@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+
 
 class DynaSolver {
  public:
@@ -24,7 +28,7 @@ class DynaSolver {
   const double Nint            = 10;            //Number of individuals per individual bin
   const double Eint            = 100;           //Number of energy units per energy bin
   const double Sint            = 1;             //Number of species per species bin
-  const double MAX_TIMESTEP    = 50000;         //Number of timesteps to take
+  const double MAX_TIMESTEP    = 20000;         //Number of timesteps to take
   const double MAX_INDIVIDUALS = 251;           //Number of bins for individuals
   const double MAX_SPECIES     = 65;            //Number of bins for species
   const double MAX_METABOLIC   = 3240;          //Number of bins for energy
@@ -47,18 +51,22 @@ class DynaSolver {
   dvec avg_S;
 
  private:
-  void SaveVec(const dvec &v, std::ofstream &fout) const {
+  void SaveVec(const dvec &v, boost::iostreams::filtering_ostream &fout) const {
     fout.write(reinterpret_cast<const char*>( v.data() ), v.size()*sizeof( double ));
   }
 
-  void SaveSavePoint(const savepoint_t &sp, std::ofstream &fout) const {
+  void SaveSavePoint(const savepoint_t &sp, boost::iostreams::filtering_ostream &fout) const {
     for(const auto &v: sp)
       SaveVec(v, fout);
   }
 
  public:
   void saveAll(const std::string filename) const {
-    std::ofstream fout(filename, std::ios::out | std::ios::binary);
+    std::ofstream outfile(filename, std::ios::out | std::ios::binary);
+
+    boost::iostreams::filtering_ostream fout;
+    fout.push(boost::iostreams::gzip_compressor());
+    fout.push(outfile);
 
     const unsigned int timesteps  = sum_H.size();
     const unsigned int savepoints = Fsave.size();
