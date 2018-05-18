@@ -284,27 +284,27 @@ class DynaSolver {
 
     //expected_N3 = <1/ln(N)^(1/3)>
     ftype expected_N3 = 0;
-    #pragma omp parallel for simd reduction(+:expected_N2)
+    #pragma omp parallel for simd reduction(+:expected_N3)
     #pragma acc parallel loop reduction(+:expected_N3) async(1) present(this)
     for(unsigned int i=0;i<MAX_INDIVIDUALS;i++)
       expected_N3 += std::pow(1/logN,1./3) * Gprev[i];
 
     //expected_N4 = <ln(N)^(1/3)>
     ftype expected_N4 = 0;
-    #pragma omp parallel for simd reduction(+:expected_N2)
+    #pragma omp parallel for simd reduction(+:expected_N4)
     #pragma acc parallel loop reduction(+:expected_N4) async(2) present(this)
     for(unsigned int i=0;i<MAX_INDIVIDUALS;i++)
       expected_N4 += std::pow(logN,1./3) * Gprev[i];
 
     //expected_N5 = <N^(1/3)/ln(N)^(2/3)
     ftype expected_N5 = 0;
-    #pragma omp parallel for simd reduction(+:expected_N2)
+    #pragma omp parallel for simd reduction(+:expected_N5)
     #pragma acc parallel loop reduction(+:expected_N5) async(3) present(this)
     for(unsigned int i=0;i<MAX_INDIVIDUALS;i++)
       expected_N5 += std::pow(Gvalue[i],1./3)/std::pow(logN,2./3) * Gprev[i];
 
     ftype expected_E1 = 0;
-    #pragma omp parallel for simd reduction(+:expected_N2)
+    #pragma omp parallel for simd reduction(+:expected_E1)
     #pragma acc parallel loop reduction(+:expected_E1) async(4) present(this)
     for(unsigned int i=0;i<MAX_METABOLIC;i++)
       expected_E1 += std::pow(Hvalue[i],1./3)*Hprev[i];
@@ -312,7 +312,7 @@ class DynaSolver {
 
     //avg_E2 = <E^(2/3)>
     ftype expected_E2 = 0;
-    #pragma omp parallel for simd reduction(+:expected_N2)
+    #pragma omp parallel for simd reduction(+:expected_E2)
     #pragma acc parallel loop reduction(+:expected_E2) async(5) present(this)
     for(unsigned int i=0;i<MAX_METABOLIC;i++)
       expected_E2 += std::pow(Hvalue[i],2./3)*Hprev[i];
