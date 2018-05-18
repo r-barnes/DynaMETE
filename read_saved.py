@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import gzip
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import os
+import sys
 
 def GetSavePoint(f, savepoint_num, width):
   rawdata = f.read(8*savepoint_num*width)
@@ -23,8 +24,14 @@ dtype = np.dtype([
 ])
 
 
-fin = gzip.GzipFile("/z/saved")
-# fin = open("/z/saved", "rb")
+if len(sys.argv)!=2:
+  print("Syntax: {0} <Save File>".format(sys.argv[1]))
+  sys.exit(-1)
+
+
+
+#fin = gzip.GzipFile("/z/saved")
+fin = open(sys.argv[1], "rb")
 fin.seek(0, os.SEEK_SET)
 
 rawdata = fin.read(5*4)
@@ -46,6 +53,14 @@ raise Exception("Interactive time")
 plt.matshow(np.log(f.transpose())/np.log(10), aspect='auto'); plt.show()
 plt.matshow(np.log(G.transpose())/np.log(10), aspect='auto'); plt.show()
 plt.matshow(np.log(H.transpose())/np.log(10), aspect='auto'); plt.show()
+
+temp = G.copy()
+temp[temp<1e-3]= 0
+plt.matshow(np.log(temp.transpose())/np.log(10), aspect='auto'); plt.show()
+
+plt.matshow(np.log(H.transpose())/np.log(10), aspect='auto'); plt.show()
+
+plt.plot(G[19000,:]); plt.show()
 
 
 fig, ax = plt.subplots(1,3, sharex=True, sharey=True)
