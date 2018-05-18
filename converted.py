@@ -333,20 +333,34 @@ for t in range(1,MAX_TIMESTEP):
   #Check Normalization
   ####################
 
+  # Zeroify(f[t])
+  # Zeroify(G[t])
+  # Zeroify(H[t])
+
+  # f[t][f[t]<0] = 0
+  # G[t][G[t]<0] = 0
+  # H[t][H[t]<0] = 0
+
+  # G[t,200:] = 0
+  # G[t,200:] = 0
+  # H[t,200:] = 0
+
+  # f[t] = f[t]/np.sum(f[t])
+  # G[t] = G[t]/np.sum(G[t])
+  # H[t] = H[t]/np.sum(H[t])
+
   #see wether the probabilities sum up to 1
-  sum_H[t] = np.sum(H[t, 1:]) #the sum of the probabilities of Energy at time t
-  sum_G[t] = np.sum(G[t, 1:]) #the sum of the probabilities of Individuals at time t
-  sum_F[t] = np.sum(f[t, 1:]) #the sum of the probabilities of Species at time t
+  sum_H[t] = np.sum(H[t]) #the sum of the probabilities of Energy at time t
+  sum_G[t] = np.sum(G[t]) #the sum of the probabilities of Individuals at time t
+  sum_F[t] = np.sum(f[t]) #the sum of the probabilities of Species at time t
 
   #Calculate <E>, <N>, <S>
-  avg_E[t] = np.sum(Hvalue[2:] * H[t, 2:])
-  avg_N[t] = np.sum(Gvalue[2:] * G[t, 2:])
-  avg_S[t] = np.sum(Fvalue[2:] * f[t, 2:])
+  avg_E[t] = np.sum(Hvalue * H[t])
+  avg_N[t] = np.sum(Gvalue * G[t])
+  avg_S[t] = np.sum(Fvalue * f[t])
 
-  f[t][f[t]<0] = 0
-  G[t][G[t]<0] = 0
-  H[t][H[t]<0] = 0
 
+plt.matshow(np.log(G.transpose())/np.log(10), aspect='auto'); plt.show()
 
 fig, ax = plt.subplots(1,3, sharex=True, sharey=True)
 ax[0].plot(sum_H, label="sum_H")
