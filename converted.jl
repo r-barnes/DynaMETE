@@ -288,6 +288,9 @@ PyPlot.legend()
 PyPlot.subplot(413)
 PyPlot.plot(avg_E, label="avg_E")
 PyPlot.legend()
+PyPlot.subplot(414)
+PyPlot.plot(avg_E./avg_N, label="avg_E/avg_N")
+PyPlot.legend()
 PyPlot.suptitle("Average of state variables")
 
 
@@ -302,5 +305,34 @@ PyPlot.subplot(313)
 PyPlot.plot(Evalue,H, label="H Last")
 PyPlot.legend()
 PyPlot.suptitle("State variable distribution at final time step")
+
+
+
+PyPlot.subplot(311)
+PyPlot.plot(Svalue,Fs[25000], label="f Last")
+PyPlot.legend()
+PyPlot.subplot(312)
+PyPlot.plot(Nvalue,Gs[25000], label="G last")
+PyPlot.legend()
+PyPlot.subplot(313)
+PyPlot.plot(Evalue,Hs[25000], label="H Last")
+PyPlot.legend()
+PyPlot.suptitle("State variable distribution at final time step")
+
+
+
+
+PyPlot.subplot(411)
+PyPlot.plot(Nvalue,Gs[500], label="500")
+PyPlot.legend()
+PyPlot.subplot(412)
+PyPlot.plot(Nvalue,Gs[1000], label="1000")
+PyPlot.legend()
+PyPlot.subplot(413)
+PyPlot.plot(Nvalue,Gs[3500], label="3500")
+PyPlot.legend()
+PyPlot.subplot(414)
+PyPlot.plot(Nvalue,Gs[4000], label="4000")
+PyPlot.legend()
 
 
