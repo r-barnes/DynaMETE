@@ -426,5 +426,5 @@ int main(int argc, char **argv){
   DynaSolver ds;
   ds.printConfig();
   ds.run();
-  ds.saveAll("/z/saved");
+  ds.saveAll(argv[1]);
 }
