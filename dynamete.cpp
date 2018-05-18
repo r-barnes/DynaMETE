@@ -15,20 +15,19 @@ class DynaSolver {
  public:
   ////////////////////////////
   //CONSTANTS
-  const double b0              = 0.0025;        //Birth rate per capita
-  const double d0              = 0.001;         //Death rate per capita
-  const double lam0            = 0;             //Speciation rate
-  const double m               = 0.001;         //Migration rate
-  const double Emax            = 300000;        //Soft maximum for energy (TODO)
-  const double w0              = 0.01;          //Ontogenic growth (growth of individual over its lifespan): See above
-  const double w1              = 0.0003;        //Ontogenic growth (growth of individual over its lifespan): See above
-  const double Smeta           = 60;            //Species richness of the meta community
-  const double d1              = (b0-d0)/Emax;  //Density dependent contribution to death rate
-  const double meta            = 100;           //100/(E/N) of meta
-  const double Nint            = 10;            //Number of individuals per individual bin
-  const double Eint            = 100;           //Number of energy units per energy bin
-  const double Sint            = 1;             //Number of species per species bin
-
+  const double b0                    = 0.0025;        //Birth rate per capita
+  const double d0                    = 0.001;         //Death rate per capita
+  const double lam0                  = 0;             //Speciation rate
+  const double m                     = 0.001;         //Migration rate
+  const double Emax                  = 300000;        //Soft maximum for energy (TODO)
+  const double w0                    = 0.01;          //Ontogenic growth (growth of individual over its lifespan): See above
+  const double w1                    = 0.0003;        //Ontogenic growth (growth of individual over its lifespan): See above
+  const double Smeta                 = 60;            //Species richness of the meta community
+  const double d1                    = (b0-d0)/Emax;  //Density dependent contribution to death rate
+  const double meta                  = 100;           //100/(E/N) of meta
+  const double Nint                  = 10;            //Number of individuals per individual bin
+  const double Eint                  = 100;           //Number of energy units per energy bin
+  const double Sint                  = 1;             //Number of species per species bin
   typedef std::vector<double> dvec;
   typedef std::list< dvec > savepoint_t;
 
