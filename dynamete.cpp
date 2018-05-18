@@ -28,16 +28,16 @@ class DynaSolver {
   const double Nint            = 10;            //Number of individuals per individual bin
   const double Eint            = 100;           //Number of energy units per energy bin
   const double Sint            = 1;             //Number of species per species bin
-  const double MAX_TIMESTEP    = 20000;         //Number of timesteps to take
-  const double MAX_INDIVIDUALS = 251;           //Number of bins for individuals
-  const double MAX_SPECIES     = 65;            //Number of bins for species
-  const double MAX_METABOLIC   = 3240;          //Number of bins for energy
 
   typedef std::vector<double> dvec;
   typedef std::list< dvec > savepoint_t;
 
   dvec fprev,  Gprev, Hprev;
   dvec f,      G,     H;
+  const unsigned int MAX_TIMESTEP    = 20000;         //Number of timesteps to take
+  const unsigned int MAX_INDIVIDUALS = 500;           //Number of bins for individuals
+  const unsigned int MAX_SPECIES     = 65;            //Number of bins for species
+  const unsigned int MAX_METABOLIC   = 3240;          //Number of bins for energy
   dvec Fvalue, Gvalue, Hvalue;
 
   std::vector<unsigned int> savetimes;
@@ -98,7 +98,7 @@ class DynaSolver {
   double VecSum(const dvec &v) const {
     double sum = 0;
     #pragma omp parallel for simd reduction(+:sum)
-    for(unsigned int i=0;i<v.size();i++)
+    for(unsigned int i=0;i<len;i++)
       sum += v[i];
     return sum;
   }
@@ -107,7 +107,7 @@ class DynaSolver {
     double sum = 0;
     assert(a.size()==b.size());
     #pragma omp parallel for simd reduction(+:sum)
-    for(unsigned int i=0;i<a.size();i++)
+    for(unsigned int i=0;i<len;i++)
       sum += a[i]*b[i];
     return sum;
   }
@@ -219,32 +219,32 @@ class DynaSolver {
 
     //expected_N2 = <1/ln(N)>
     double expected_N2 = 0;
-    for(const auto x: Gprev)
-      expected_N2 += 1/logN*x;
+    for(unsigned int i=0;i<MAX_INDIVIDUALS;i++)
+      expected_N2 += 1/logN*Gprev[i];
 
     //expected_N3 = <1/ln(N)^(1/3)>
     double expected_N3 = 0;
-    for(const auto x: Gprev)
-      expected_N3 += std::pow(1/logN,1./3) * x;
+    for(unsigned int i=0;i<MAX_INDIVIDUALS;i++)
+      expected_N3 += std::pow(1/logN,1./3) * Gprev[i];
 
     //expected_N4 = <ln(N)^(1/3)>
     double expected_N4 = 0;
-    for(const auto x: Gprev)
-      expected_N4 += std::pow(logN,1./3) * x;
+    for(unsigned int i=0;i<MAX_INDIVIDUALS;i++)
+      expected_N4 += std::pow(logN,1./3) * Gprev[i];
 
     //expected_N5 = <N^(1/3)/ln(N)^(2/3)
     double expected_N5 = 0;
-    for(unsigned int i=0;i<Gvalue.size();i++)
+    for(unsigned int i=0;i<MAX_INDIVIDUALS;i++)
       expected_N5 += std::pow(Gvalue[i],1./3)/std::pow(logN,2./3) * Gprev[i];
 
     double expected_E1 = 0;
-    for(unsigned int i=0;i<Hvalue.size();i++)
+    for(unsigned int i=0;i<MAX_METABOLIC;i++)
       expected_E1 += std::pow(Hvalue[i],1./3)*Hprev[i];
     expected_E1 = 1/expected_E1;
 
     //avg_E2 = <E^(2/3)>
     double expected_E2 = 0;
-    for(unsigned int i=0;i<Hvalue.size();i++)
+    for(unsigned int i=0;i<MAX_METABOLIC;i++)
       expected_E2 += std::pow(Hvalue[i],2./3)*Hprev[i];
 
 
@@ -259,7 +259,7 @@ class DynaSolver {
 
     //Leaves out edge cells
     #pragma omp parallel for simd
-    for(uint i=1;i<Hlen-1;i++){
+    for(unsigned int i=2;i<Hlen-1;i++){
       H[i] = (
               Hprev[i  ]
         -   m*Hprev[i  ]/meta
@@ -403,7 +403,7 @@ class DynaSolver {
 
   void run() {
     MakeSavePoint(0);
-    for(int t=1;t<MAX_TIMESTEP;t++){
+    for(unsigned int t=1;t<MAX_TIMESTEP;t++){
       if(t%100==0)
         std::cerr<<"p t = "<<t<<std::endl;
       step(t);
