@@ -163,6 +163,11 @@ function main()
   G = zeros(MAX_INDIVIDUALS)
   H = zeros(MAX_METABOLIC)
 
+  times = []
+  Fs    = []
+  Gs    = []
+  Hs    = []
+
   ######################
   #INITIAL CONDITIONS
   ######################
@@ -222,9 +227,9 @@ function main()
 
     UpdateF!(f,fprev,expected_N2,expected_E1,expected_E2)
 
-    f = max.(f,0)
-    G = max.(G,0)
-    H = max.(H,0)
+    f[f.<1e-15] = 0
+    G[G.<1e-15] = 0
+    H[H.<1e-15] = 0
 
     ####################
     #Check Normalization
@@ -240,15 +245,20 @@ function main()
     avg_N[t] = sum(Nvalue[3:end] .* G[ 3:end])
     avg_S[t] = sum(Svalue[3:end] .* f[ 3:end])
 
+    append!(times,t)
+    push!(Fs,copy(f))
+    push!(Gs,copy(G))
+    push!(Hs,copy(H))
+
     fprev = f
     Gprev = G
     Hprev = H
   end
 
-  return sum_H, sum_G, sum_F, avg_S, avg_N, avg_E, f, G, H
+  return sum_H, sum_G, sum_F, avg_S, avg_N, avg_E, f, G, H, times, Fs,Gs,Hs
 end
 
-sum_H, sum_G, sum_F, avg_S, avg_N, avg_E, f, G, H = main()
+sum_H, sum_G, sum_F, avg_S, avg_N, avg_E, f, G, H, times, Fs,Gs, Hs = main()
 
 
 
