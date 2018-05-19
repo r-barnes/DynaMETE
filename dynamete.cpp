@@ -327,15 +327,15 @@ class DynaSolver {
     // #pragma acc update host (Gprev[0:2],Gprev[MAX_INDIVIDUALS-2:MAX_INDIVIDUALS]) async(7)
     // #pragma acc update host (fprev[0:2],fprev[MAX_SPECIES-2:MAX_SPECIES])         async(8)
 
-    //##################
-    //Calculate H matrix
-    //##################
-
     #pragma acc wait
 
 
     #pragma omp parallel
     {
+
+    //##################
+    //Calculate H matrix
+    //##################
 
     //Leaves out edge cells
     #pragma omp for simd nowait
@@ -353,6 +353,10 @@ class DynaSolver {
       );
     }
 
+    //##################
+    //Calculate G matrix
+    //##################
+
     #pragma omp for simd nowait
     #pragma acc parallel loop async(1) present(this)
     for(unsigned int i=2;i<Glen-1;i++){
@@ -363,6 +367,10 @@ class DynaSolver {
         +    Gprev[i+1]*(     d0*expected_E1 + d1*expected_E2) * Gvalue43[i+1]*Gvalue13[i+1]
         )/Nint;
     }    
+
+    // ###################
+    // #Calculate F matrix
+    // ###################
 
     #pragma omp for simd
     #pragma acc parallel loop async(2) present(this)
@@ -407,13 +415,6 @@ class DynaSolver {
       - (d0*Hvalue23[Hlen-1] + d1*Hvalue53[Hlen-1]) * expected_N5*Hprev[Hlen-1]/Eint
     );
 
-    //##################
-    //Calculate G matrix
-    //##################
-    
-
-
-
 
 
     // #######################
@@ -440,11 +441,6 @@ class DynaSolver {
       -   Gprev[Glen-1]*(d0*expected_E1 + d1*expected_E2) *Gvalue13[Glen-1]*Gvalue43[Glen-1]/Nint
     );
 
-    // ###################
-    // #Calculate F matrix
-    // ###################
-
-    
 
 
     // #######################
@@ -473,12 +469,6 @@ class DynaSolver {
     // #pragma acc update device (H[0:2],H[MAX_METABOLIC-2:MAX_METABOLIC])    
     // #pragma acc update device (G[0:2],G[MAX_INDIVIDUALS-2:MAX_INDIVIDUALS])
     // #pragma acc update device (f[0:2],f[MAX_SPECIES-2:MAX_SPECIES])        
-
-
-    // ####################
-    // #Check Normalization
-    // ####################
-
 
     // f[t][f[t]<0] = 0
     // G[t][G[t]<0] = 0
