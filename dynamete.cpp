@@ -15,13 +15,15 @@ class DynaSolver {
  public:
   ////////////////////////////
   //CONSTANTS
+  //Rate Constants
   const double b0                    = 0.0025;        //Birth rate per capita
   const double d0                    = 0.001;         //Death rate per capita
-  const double lam0                  = 0;             //Speciation rate
   const double m                     = 0.001;         //Migration rate
-  const double Emax                  = 300000;        //Soft maximum for energy (TODO)
   const double w0                    = 0.01;          //Ontogenic growth (growth of individual over its lifespan): See above
   const double w1                    = 0.0003;        //Ontogenic growth (growth of individual over its lifespan): See above
+  const double lam0                  = 0;             //Speciation rate
+
+  const double Emax                  = 300000;        //Soft maximum for energy (TODO)
   const double Smeta                 = 60;            //Species richness of the meta community
   const double d1                    = (b0-d0)/Emax;  //Density dependent contribution to death rate
   const double meta                  = 100;           //100/(E/N) of meta
