@@ -319,9 +319,9 @@ class DynaSolver {
     for(unsigned int i=0;i<MAX_METABOLIC;i++)
       expected_E2 += std::pow(Hvalue[i],2./3)*Hprev[i];
 
-    #pragma acc update host (Hprev[0:MAX_METABOLIC])     async(6)
-    #pragma acc update host (Gprev[0:MAX_INDIVIDUALS])     async(7)
-    #pragma acc update host (fprev[0:MAX_SPECIES])     async(8)
+    #pragma acc update host (Hprev[0:MAX_METABOLIC])    async(6)
+    #pragma acc update host (Gprev[0:MAX_INDIVIDUALS])  async(7)
+    #pragma acc update host (fprev[0:MAX_SPECIES])      async(8)
     // #pragma acc update host (Hprev[0:2],Hprev[MAX_METABOLIC-2:MAX_METABOLIC])     async(6)
     // #pragma acc update host (Gprev[0:2],Gprev[MAX_INDIVIDUALS-2:MAX_INDIVIDUALS]) async(7)
     // #pragma acc update host (fprev[0:2],fprev[MAX_SPECIES-2:MAX_SPECIES])         async(8)
