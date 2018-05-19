@@ -220,12 +220,13 @@ class DynaSolver {
 
     delete[] fprev;
     delete[] f;
-    delete[] Fvalue;
     delete[] Gprev;
     delete[] G;
-    delete[] Gvalue;
     delete[] Hprev;
     delete[] H;
+
+    delete[] Fvalue;
+    delete[] Gvalue;
     delete[] Hvalue;
     delete[] sum_H;
     delete[] sum_G;
