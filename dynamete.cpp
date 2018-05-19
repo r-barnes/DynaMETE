@@ -267,12 +267,11 @@ class DynaSolver {
     const ftype logN = std::log(n_s * std::log(n_s * std::log(n_s * std::log(n_s * std::log(n_s))))); 
 
 
-    VecPower   (Hvalue,MAX_METABOLIC,2./3,Hvalue23);
-    VecPower   (Hvalue,MAX_METABOLIC,5./3,Hvalue53);
+    VecPower   (Hvalue,MAX_METABOLIC,  2./3,Hvalue23);
+    VecPower   (Hvalue,MAX_METABOLIC,  5./3,Hvalue53);
     VecLogPower(Gvalue,MAX_INDIVIDUALS,1./3,Gvalue13);
     VecPower   (Gvalue,MAX_INDIVIDUALS,4./3,Gvalue43);    
-    VecPower   (Fvalue,MAX_SPECIES,4./3,Fvalue43);
-
+    VecPower   (Fvalue,MAX_SPECIES,    4./3,Fvalue43);
 
     const auto Flen = MAX_SPECIES;
     const auto Hlen = MAX_METABOLIC;
