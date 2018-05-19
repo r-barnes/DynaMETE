@@ -67,17 +67,17 @@ class DynaSolver {
   dvec Hvalue23,Hvalue53,Gvalue13,Gvalue43,Fvalue43;
 
  private:
-  void SaveVec(double* v, const int len, std::ostream &fout) {
+  void SaveVec(const double *const v, const int len, std::ostream &fout) const {
     fout.write(reinterpret_cast<const char*>( v ), len*sizeof( double ));
   }
 
-  void SaveSavePoint(savepoint_t &sp, std::ostream &fout) {
-    for(auto &v: sp)
+  void SaveSavePoint(const savepoint_t &sp, std::ostream &fout) const {
+    for(const auto &v: sp)
       SaveVec(v.data(), v.size(), fout);
   }
 
  public:
-  void saveAll(const std::string filename) {
+  void saveAll(const std::string filename) const {
     std::ofstream fout(filename, std::ios::out | std::ios::binary);
 
     // boost::iostreams::filtering_ostream fout;
@@ -126,14 +126,14 @@ class DynaSolver {
   }
 
   //Calculates result = \vec{a}+m*\vec{b}
-  void VecFMA(const dvec a, const ftype m, const dvec b, const unsigned int len, dvec result) {
+  void VecFMA(const dvec a, const ftype m, const dvec b, const unsigned int len, dvec result) const {
     #pragma omp parallel for simd
     #pragma acc parallel loop present(a,b,result,this)
     for(unsigned int i=0;i<len;i++)
       result[i] = a[i]+m*b[i];
   }
 
-  void CopyVec(const dvec from, const unsigned int len, dvec to){
+  void CopyVec(const dvec from, const unsigned int len, dvec to) const {
     #pragma omp parallel for simd
     #pragma acc parallel loop present(from,to,this)
     for(unsigned int i=0;i<len;i++)
