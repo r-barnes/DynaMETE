@@ -504,7 +504,8 @@ class DynaSolver {
       GetNormalization(t);
       //Calculate <E>, <N>, <S>
       GetStateAverage(t);
-      MakeSavePoint(t);
+      if(t%1==0)
+        MakeSavePoint(t);
     }    
   }
 };
