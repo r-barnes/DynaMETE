@@ -341,8 +341,7 @@ class DynaSolver {
     #pragma omp for simd nowait
     #pragma acc parallel loop async(0) present(this)
     for(unsigned int i=2;i<Hlen-1;i++){
-      H[i] = (
-              Hprev[i  ]
+      H[i] = Hprev[i] + (
         -   m*Hprev[i  ]/meta
         +   m*Hprev[i-1]/meta
         +  w0*Hvalue23[i-1]                     *expected_N5*Hprev[i-1]/Eint
@@ -357,22 +356,19 @@ class DynaSolver {
     #pragma omp for simd nowait
     #pragma acc parallel loop async(1) present(this)
     for(unsigned int i=2;i<Glen-1;i++){
-      G[i] = (
-             Gprev[i  ] + (
+      G[i] = Gprev[i] + (
         - m*(Gprev[i  ] - Gprev[i-1])   
         +    Gprev[i-1]*(     b0*expected_E1                 ) * Gvalue43[i-1]*Gvalue13[i-1]
         -    Gprev[i  ]*((b0+d0)*expected_E1 + d1*expected_E2) * Gvalue43[i  ]*Gvalue13[i  ]
         +    Gprev[i+1]*(     d0*expected_E1 + d1*expected_E2) * Gvalue43[i+1]*Gvalue13[i+1]
-        )/Nint
-      );
+        )/Nint;
     }    
 
     #pragma omp for simd
     #pragma acc parallel loop async(2) present(this)
     for(unsigned int i=1;i<Flen-1;i++){
-      f[i] = (
-          fprev[i  ]
-        + fprev[i-1]*lam0*Fvalue[i-1]
+      f[i] =  fprev[i] + (
+          fprev[i-1]*lam0*Fvalue[i-1]
         + fprev[i-1]*m*(1-Fvalue[i-1]/Smeta)
         - fprev[i  ]*lam0*Fvalue[i]
         - fprev[i  ]*m*(1-Fvalue[i]/Smeta)
@@ -389,14 +385,14 @@ class DynaSolver {
     //######################
 
     //Outer columns are special cases: First column
-    H[0] = (
-          Hprev[0]
+    H[0] = Hprev[0] + (
       - m*Hprev[0]/meta
       + (d0*Hvalue23[1] + d1*Hvalue53[1])*expected_N5*Hprev[1]/Eint
     );
 
     //Special case: Second column
-    H[1] = (Hprev[1] - m*Hprev[1]/meta + m*Hprev[0]/meta
+    H[1] = Hprev[1] + (
+      - m*Hprev[1]/meta + m*Hprev[0]/meta
       - (d0*Hvalue23[1] + d1*Hvalue53[1])*expected_N5*Hprev[1]/Eint
       -  w0*Hvalue23[1]                  *expected_N5*Hprev[1]/Eint
       +  w1*Hvalue[1]                                *Hprev[1]/Eint
@@ -404,8 +400,7 @@ class DynaSolver {
     );
 
     //Special case: last column
-    H[Hlen-1] = (
-          Hprev[Hlen-1]
+    H[Hlen-1] = Hprev[Hlen-1] + (
       + m*Hprev[Hlen-2]/meta
       +  w0*Hvalue23[Hlen-2]                        * expected_N5*Hprev[Hlen-2]/Eint
       -  w1*Hvalue[Hlen-2]                                       *Hprev[Hlen-2]/Eint
@@ -426,23 +421,20 @@ class DynaSolver {
     // #######################
 
     //Outer columns are special cases: First column
-    G[0] = (
-          Gprev[0]
+    G[0] = Gprev[0] + (
       - m*Gprev[0]/Nint
       +   Gprev[1]*(     d0*expected_E1 + d1*expected_E2) * Gvalue43[ 1]*Gvalue13[ 1]/Nint
     );
 
     //Special case: Second column
-    G[1] = (
-           Gprev[1]
+    G[1] = Gprev[1] + (
       - m*(Gprev[1]-Gprev[0])/Nint
       -    Gprev[ 1]*((b0+d0)*expected_E1 + d1*expected_E2) * Gvalue43[ 1]*Gvalue13[ 1]/Nint
       +    Gprev[ 2]*(     d0*expected_E1 + d1*expected_E2) * Gvalue43[ 2]*Gvalue13[ 2]/Nint
     );
 
     //Special case: last column
-    G[Glen-1] = (
-          Gprev[Glen-1] +
+    G[Glen-1] = Gprev[Glen-1] + (
         m*Gprev[Glen-2]/Nint
       +   Gprev[Glen-2]*(b0*expected_E1)                  *Gvalue13[Glen-2]*Gvalue43[Glen-2]/Nint
       -   Gprev[Glen-1]*(d0*expected_E1 + d1*expected_E2) *Gvalue13[Glen-1]*Gvalue43[Glen-1]/Nint
@@ -460,19 +452,19 @@ class DynaSolver {
     // #######################
 
     //Outer columns are special cases: First column
-    f[0] = (
-        fprev[0]
+    f[0] = fprev[0] + (
       - fprev[0]*m*(1-Fvalue[0 ]/Smeta)
       + fprev[ 1]*Fvalue43[ 1]*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
     );
 
     //Special case: last column
-    f[Flen-1] = (
-      fprev[Flen-1]
+    f[Flen-1] = fprev[Flen-1] + (
       + fprev[Flen-2]*m*(1-Fvalue[Flen-2]/Smeta)
       - fprev[Flen-1]*Fvalue43[Flen-1]*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
       + fprev[Flen-2]*lam0*Fvalue[Flen-2]
     );
+
+
 
     #pragma acc update device (H[0:MAX_METABOLIC])
     #pragma acc update device (G[0:MAX_INDIVIDUALS])
