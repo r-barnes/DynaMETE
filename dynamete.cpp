@@ -35,13 +35,24 @@ class DynaSolver {
   const unsigned int MAX_SPECIES     = 65;            //Number of bins for species
   const unsigned int MAX_METABOLIC   = 3240;          //Number of bins for energy
 
+  const double h = 1;                                 //Size of timestep
+
   typedef double ftype;
   typedef ftype* dvec;
   typedef std::list< std::vector<double> > savepoint_t;
 
-  dvec fprev,  Gprev,  Hprev;
   dvec f,      G,      H;
+
+  dvec fnext,  Gnext,  Hnext;
+
   dvec Fvalue, Gvalue, Hvalue;
+
+  dvec f_k1,   G_k1,   H_k1;
+  dvec f_k2,   G_k2,   H_k2;
+  dvec f_k3,   G_k3,   H_k3;
+  dvec f_k4,   G_k4,   H_k4;
+
+  dvec f_kin,   G_kin,   H_kin;
 
   std::vector<unsigned int> savetimes;
   savepoint_t Fsave, Gsave, Hsave;
@@ -114,10 +125,25 @@ class DynaSolver {
     return sum;
   }
 
+  //Calculates result = \vec{a}+m*\vec{b}
+  void VecFMA(const dvec a, const ftype m, const dvec b, const unsigned int len, dvec result) {
+    #pragma omp parallel for simd
+    #pragma acc parallel loop present(a,b,result,this)
+    for(unsigned int i=0;i<len;i++)
+      result[i] = a[i]+m*b[i];
+  }
+
+  void CopyVec(const dvec from, const unsigned int len, dvec to){
+    #pragma omp parallel for simd
+    #pragma acc parallel loop present(from,to,this)
+    for(unsigned int i=0;i<len;i++)
+      to[i]= from [i];
+  }
+
   void CheckInitialization() const {
-    assert(std::abs(1-VecSum(Hprev,MAX_METABOLIC  ))<1e-6);
-    assert(std::abs(1-VecSum(Gprev,MAX_INDIVIDUALS))<1e-6);
-    assert(std::abs(1-VecSum(fprev,MAX_SPECIES    ))<1e-6);
+    assert(std::abs(1-VecSum(H,MAX_METABOLIC  ))<1e-6);
+    assert(std::abs(1-VecSum(G,MAX_INDIVIDUALS))<1e-6);
+    assert(std::abs(1-VecSum(f,MAX_SPECIES    ))<1e-6);
   }
 
   void GetNormalization(unsigned int t){
@@ -155,25 +181,16 @@ class DynaSolver {
     savetimes.emplace_back(t);
   }
 
-  void CopyToPrev() {
-    #pragma acc parallel loop present(this)
-    for(unsigned int i=0;i<MAX_SPECIES;    i++) fprev[i] = f[i];
-    
-    #pragma acc parallel loop present(this)
-    for(unsigned int i=0;i<MAX_INDIVIDUALS;i++) Gprev[i] = G[i];
-    
-    #pragma acc parallel loop present(this)
-    for(unsigned int i=0;i<MAX_METABOLIC;  i++) Hprev[i] = H[i];
-  }
-
  public:
   DynaSolver(){
-    fprev  = new ftype[MAX_SPECIES];
     f      = new ftype[MAX_SPECIES];
-    Gprev  = new ftype[MAX_INDIVIDUALS];
     G      = new ftype[MAX_INDIVIDUALS];
-    Hprev  = new ftype[MAX_METABOLIC];
     H      = new ftype[MAX_METABOLIC];
+
+    fnext = new ftype[MAX_SPECIES];
+    Gnext = new ftype[MAX_INDIVIDUALS];
+    Hnext = new ftype[MAX_METABOLIC];
+
 
     Fvalue = new ftype[MAX_SPECIES];
     Gvalue = new ftype[MAX_INDIVIDUALS];
@@ -192,6 +209,23 @@ class DynaSolver {
     Gvalue43 = new ftype[MAX_INDIVIDUALS];
     Fvalue43 = new ftype[MAX_SPECIES];
 
+    f_k1 = new ftype[MAX_SPECIES];
+    G_k1 = new ftype[MAX_INDIVIDUALS];
+    H_k1 = new ftype[MAX_METABOLIC];
+    f_k2 = new ftype[MAX_SPECIES];
+    G_k2 = new ftype[MAX_INDIVIDUALS];
+    H_k2 = new ftype[MAX_METABOLIC];
+    f_k3 = new ftype[MAX_SPECIES];
+    G_k3 = new ftype[MAX_INDIVIDUALS];
+    H_k3 = new ftype[MAX_METABOLIC];    
+    f_k4 = new ftype[MAX_SPECIES];
+    G_k4 = new ftype[MAX_INDIVIDUALS];
+    H_k4 = new ftype[MAX_METABOLIC];   
+
+    f_kin = new ftype[MAX_SPECIES]; 
+    G_kin = new ftype[MAX_INDIVIDUALS]; 
+    H_kin = new ftype[MAX_METABOLIC];
+
     for(unsigned int i=0;i<MAX_SPECIES;    i++) Fvalue[i] = i*Sint;
     for(unsigned int i=0;i<MAX_INDIVIDUALS;i++) Gvalue[i] = i*Nint;
     for(unsigned int i=0;i<MAX_METABOLIC;  i++) Hvalue[i] = i*Eint;
@@ -206,9 +240,6 @@ class DynaSolver {
 
     #pragma acc enter data copyin(this[0:1],fprev[0:MAX_SPECIES],f[0:MAX_SPECIES],Fvalue[0:MAX_SPECIES],Gvalue[0:MAX_INDIVIDUALS],Hvalue[0:MAX_METABOLIC],Gprev[0:MAX_INDIVIDUALS],Hprev[0:MAX_METABOLIC],G[0:MAX_INDIVIDUALS],H[0:MAX_METABOLIC]) create(sum_H[0:MAX_TIMESTEP],sum_G[0:MAX_TIMESTEP],sum_F[0:MAX_TIMESTEP],avg_E[0:MAX_TIMESTEP],avg_N[0:MAX_TIMESTEP],avg_S[0:MAX_TIMESTEP],Hvalue23[0:MAX_METABOLIC],Hvalue53[0:MAX_METABOLIC],Gvalue13[0:MAX_INDIVIDUALS],Gvalue43[0:MAX_INDIVIDUALS],Fvalue43[0:MAX_SPECIES])
 
-    CopyToPrev();
-
-
     CheckInitialization();
 
     GetNormalization(0);
@@ -218,12 +249,13 @@ class DynaSolver {
   ~DynaSolver(){
     #pragma acc exit data delete(fprev[0:MAX_SPECIES],f[0:MAX_SPECIES],Fvalue[0:MAX_SPECIES],Gvalue[0:MAX_INDIVIDUALS],Hvalue[0:MAX_METABOLIC],Gprev[0:MAX_INDIVIDUALS],Hprev[0:MAX_METABOLIC],G[0:MAX_INDIVIDUALS],H[0:MAX_METABOLIC],sum_H[0:MAX_TIMESTEP],sum_G[0:MAX_TIMESTEP],sum_F[0:MAX_TIMESTEP],avg_E[0:MAX_TIMESTEP],avg_N[0:MAX_TIMESTEP],avg_S[0:MAX_TIMESTEP],Hvalue23[0:MAX_METABOLIC],Hvalue53[0:MAX_METABOLIC],Gvalue13[0:MAX_INDIVIDUALS],Gvalue43[0:MAX_INDIVIDUALS],Fvalue43[0:MAX_SPECIES])
 
-    delete[] fprev;
     delete[] f;
-    delete[] Gprev;
     delete[] G;
-    delete[] Hprev;
     delete[] H;
+
+    delete[] fnext;
+    delete[] Gnext;
+    delete[] Hnext;
 
     delete[] Fvalue;
     delete[] Gvalue;
@@ -239,6 +271,21 @@ class DynaSolver {
     delete[] Gvalue13;
     delete[] Gvalue43;
     delete[] Fvalue43;
+    delete[] f_k1;
+    delete[] G_k1;
+    delete[] H_k1;
+    delete[] f_k2;
+    delete[] G_k2;
+    delete[] H_k2;
+    delete[] f_k3;
+    delete[] G_k3;
+    delete[] H_k3;
+    delete[] f_k4;
+    delete[] G_k4;
+    delete[] H_k4;
+    delete[] f_kin;
+    delete[] G_kin;
+    delete[] H_kin;
   }
 
   void printConfig(){
@@ -261,8 +308,19 @@ class DynaSolver {
     std::cout<<"c MAX_METABOLIC   = " << MAX_METABOLIC   <<std::endl;
   }
 
-  void step(unsigned int t){
-    const ftype n_s = avg_N[t-1]/avg_S[t-1]; //Constant avg_N divided by avg_S
+  void step(
+    const double t,
+    const dvec fprev,
+    const dvec Gprev,
+    const dvec Hprev,
+    dvec f,
+    dvec G,
+    dvec H
+  ) const {
+    const auto avg_N_prev = VecMultSum(Gvalue, Gprev, MAX_INDIVIDUALS); //TODO: Check these
+    const auto avg_S_prev = VecMultSum(Fvalue, fprev, MAX_SPECIES    ); //TODO: Check these
+
+    const ftype n_s = avg_N_prev/avg_S_prev; //Constant avg_N divided by avg_S
 
     //Formula to calculate logN
     const ftype logN = std::log(n_s * std::log(n_s * std::log(n_s * std::log(n_s * std::log(n_s))))); 
@@ -341,7 +399,7 @@ class DynaSolver {
     #pragma omp for simd nowait
     #pragma acc parallel loop async(0) present(this)
     for(unsigned int i=2;i<Hlen-1;i++){
-      H[i] = Hprev[i] + (
+      H[i] = (
         -   m*Hprev[i  ]/meta
         +   m*Hprev[i-1]/meta
         +  w0*Hvalue23[i-1]                     *expected_N5*Hprev[i-1]/Eint
@@ -360,7 +418,7 @@ class DynaSolver {
     #pragma omp for simd nowait
     #pragma acc parallel loop async(1) present(this)
     for(unsigned int i=2;i<Glen-1;i++){
-      G[i] = Gprev[i] + (
+      G[i] = (
         - m*(Gprev[i  ] - Gprev[i-1])   
         +    Gprev[i-1]*(     b0*expected_E1                 ) * Gvalue43[i-1]*Gvalue13[i-1]
         -    Gprev[i  ]*((b0+d0)*expected_E1 + d1*expected_E2) * Gvalue43[i  ]*Gvalue13[i  ]
@@ -375,7 +433,7 @@ class DynaSolver {
     #pragma omp for simd
     #pragma acc parallel loop async(2) present(this)
     for(unsigned int i=1;i<Flen-1;i++){
-      f[i] =  fprev[i] + (
+      f[i] = (
           fprev[i-1]*lam0*Fvalue[i-1]
         + fprev[i-1]*m*(1-Fvalue[i-1]/Smeta)
         - fprev[i  ]*lam0*Fvalue[i]
@@ -388,18 +446,20 @@ class DynaSolver {
     }
 
     #pragma acc wait
+
+
     //######################
     //H matrix special cases
     //######################
 
     //Outer columns are special cases: First column
-    H[0] = Hprev[0] + (
+    H[0] = (
       - m*Hprev[0]/meta
       + (d0*Hvalue23[1] + d1*Hvalue53[1])*expected_N5*Hprev[1]/Eint
     );
 
     //Special case: Second column
-    H[1] = Hprev[1] + (
+    H[1] = (
       - m*Hprev[1]/meta + m*Hprev[0]/meta
       - (d0*Hvalue23[1] + d1*Hvalue53[1])*expected_N5*Hprev[1]/Eint
       -  w0*Hvalue23[1]                  *expected_N5*Hprev[1]/Eint
@@ -408,7 +468,7 @@ class DynaSolver {
     );
 
     //Special case: last column
-    H[Hlen-1] = Hprev[Hlen-1] + (
+    H[Hlen-1] = (
       + m*Hprev[Hlen-2]/meta
       +  w0*Hvalue23[Hlen-2]                        * expected_N5*Hprev[Hlen-2]/Eint
       -  w1*Hvalue[Hlen-2]                                       *Hprev[Hlen-2]/Eint
@@ -422,20 +482,20 @@ class DynaSolver {
     // #######################
 
     //Outer columns are special cases: First column
-    G[0] = Gprev[0] + (
+    G[0] = (
       - m*Gprev[0]/Nint
       +   Gprev[1]*(     d0*expected_E1 + d1*expected_E2) * Gvalue43[ 1]*Gvalue13[ 1]/Nint
     );
 
     //Special case: Second column
-    G[1] = Gprev[1] + (
+    G[1] = (
       - m*(Gprev[1]-Gprev[0])/Nint
       -    Gprev[ 1]*((b0+d0)*expected_E1 + d1*expected_E2) * Gvalue43[ 1]*Gvalue13[ 1]/Nint
       +    Gprev[ 2]*(     d0*expected_E1 + d1*expected_E2) * Gvalue43[ 2]*Gvalue13[ 2]/Nint
     );
 
     //Special case: last column
-    G[Glen-1] = Gprev[Glen-1] + (
+    G[Glen-1] = (
         m*Gprev[Glen-2]/Nint
       +   Gprev[Glen-2]*(b0*expected_E1)                  *Gvalue13[Glen-2]*Gvalue43[Glen-2]/Nint
       -   Gprev[Glen-1]*(d0*expected_E1 + d1*expected_E2) *Gvalue13[Glen-1]*Gvalue43[Glen-1]/Nint
@@ -448,13 +508,13 @@ class DynaSolver {
     // #######################
 
     //Outer columns are special cases: First column
-    f[0] = fprev[0] + (
+    f[0] = (
       - fprev[0]*m*(1-Fvalue[0 ]/Smeta)
       + fprev[ 1]*Fvalue43[ 1]*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
     );
 
     //Special case: last column
-    f[Flen-1] = fprev[Flen-1] + (
+    f[Flen-1] = (
       + fprev[Flen-2]*m*(1-Fvalue[Flen-2]/Smeta)
       - fprev[Flen-1]*Fvalue43[Flen-1]*(d0*expected_E1*expected_N2 + d1*expected_E2*expected_N2)
       + fprev[Flen-2]*lam0*Fvalue[Flen-2]
@@ -473,8 +533,62 @@ class DynaSolver {
     // f[t][f[t]<0] = 0
     // G[t][G[t]<0] = 0
     // H[t][H[t]<0] = 0
+  }
 
-    CopyToPrev();
+  void RungeOp(
+    const unsigned int t,
+    const double m,
+    const bool input_is_prev,
+    dvec f_kout,
+    dvec G_kout,
+    dvec H_kout    
+  ){
+    if(input_is_prev)
+      step(t,f,G,H,f_kout,G_kout,H_kout);   
+    else
+      step(t,f_kin,G_kin,H_kin,f_kout,G_kout,H_kout);  
+
+    VecFMA(f, m, f_kout, MAX_SPECIES,     f_kin);
+    VecFMA(G, m, G_kout, MAX_INDIVIDUALS, G_kin);
+    VecFMA(H, m, H_kout, MAX_METABOLIC,   H_kin);
+  }
+
+  void RungeSum(
+    const dvec y,
+    const dvec k1,
+    const dvec k2,
+    const dvec k3,
+    const dvec k4,
+    const unsigned int len,
+    dvec ynext
+  ){
+    #pragma omp for simd nowait
+    #pragma acc parallel loop async(0) present(this)
+    for(unsigned int i=0;i<len;i++)
+      ynext[i] = y[i] + 1./6*k1[i] + 1./3*(k2[i]+k3[i])+1./6*k4[i];
+  }
+
+  void RungeKuttaStep(const unsigned int t){
+    RungeOp(t,     h/2, true,  f_k1, G_k1, H_k1);
+    RungeOp(t+h/2, h/2, false, f_k2, G_k2, H_k2);
+    RungeOp(t+h/2, h,   false, f_k3, G_k3, H_k3);
+    RungeOp(t+h,   0,   false, f_k4, G_k4, H_k4);
+
+    RungeSum(f,f_k1,f_k2,f_k3,f_k4,MAX_SPECIES,    fnext);
+    RungeSum(G,G_k1,G_k2,G_k3,G_k4,MAX_INDIVIDUALS,Gnext);
+    RungeSum(H,H_k1,H_k2,H_k3,H_k4,MAX_METABOLIC,  Hnext);
+
+    CopyVec(fnext,MAX_SPECIES,    f);
+    CopyVec(Gnext,MAX_INDIVIDUALS,G);
+    CopyVec(Hnext,MAX_METABOLIC,  H);
+  }
+
+  void EulerStep(const unsigned int t){
+    step(t,f,G,H,f_k1,G_k1,H_k1);
+
+    VecFMA(f, h, f_k1, MAX_SPECIES,     f);
+    VecFMA(G, h, G_k1, MAX_INDIVIDUALS, G);
+    VecFMA(H, h, H_k1, MAX_METABOLIC,   H);
   }
 
   void run() {
@@ -482,7 +596,7 @@ class DynaSolver {
     for(unsigned int t=1;t<MAX_TIMESTEP;t++){
       if(t%100==0)
         std::cerr<<"p t = "<<t<<std::endl;
-      step(t);
+      RungeKuttaStep(t);
       GetNormalization(t);
       //Calculate <E>, <N>, <S>
       GetStateAverage(t);
