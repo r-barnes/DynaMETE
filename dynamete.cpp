@@ -170,12 +170,13 @@ class DynaSolver {
   DynaSolver(){
     fprev  = new ftype[MAX_SPECIES];
     f      = new ftype[MAX_SPECIES];
-    Fvalue = new ftype[MAX_SPECIES];
     Gprev  = new ftype[MAX_INDIVIDUALS];
     G      = new ftype[MAX_INDIVIDUALS];
-    Gvalue = new ftype[MAX_INDIVIDUALS];
     Hprev  = new ftype[MAX_METABOLIC];
     H      = new ftype[MAX_METABOLIC];
+
+    Fvalue = new ftype[MAX_SPECIES];
+    Gvalue = new ftype[MAX_INDIVIDUALS];
     Hvalue = new ftype[MAX_METABOLIC];
 
     sum_H = new double[MAX_TIMESTEP];
