@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <list>
 #include <string>
@@ -34,6 +35,8 @@ class DynaSolver {
   const unsigned int MAX_INDIVIDUALS = 500;           //Number of bins for individuals
   const unsigned int MAX_SPECIES     = 65;            //Number of bins for species
   const unsigned int MAX_METABOLIC   = 3240;          //Number of bins for energy
+  const unsigned int SAVE_EVERY_N    = 100;           //How many timesteps between saves
+  const unsigned int PROGRESS_INT    = 1000;          //How often to print a progress update
 
   const double h = 1;                                 //Size of timestep
 
@@ -594,13 +597,13 @@ class DynaSolver {
   void run() {
     MakeSavePoint(0);
     for(unsigned int t=1;t<MAX_TIMESTEP;t++){
-      if(t%100==0)
+      if(t%PROGRESS_INT==0)
         std::cerr<<"p t = "<<t<<std::endl;
       RungeKuttaStep(t);
       GetNormalization(t);
       //Calculate <E>, <N>, <S>
       GetStateAverage(t);
-      if(t%1==0)
+      if(t%SAVE_EVERY_N==0)
         MakeSavePoint(t);
     }    
   }
