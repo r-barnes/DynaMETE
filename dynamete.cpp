@@ -110,6 +110,12 @@ class DynaSolver {
   }
 
  private:
+  void BePositiveAboutThings(dvec v, const unsigned int len) const {
+    for(unsigned int i=0;i<len;i++)
+      if(v[i]<0)
+        v[i] = 0;
+  }
+
   ftype VecSum(const dvec v, const unsigned int len) const {
     ftype sum = 0;
     #pragma omp parallel for simd reduction(+:sum)
@@ -584,6 +590,11 @@ class DynaSolver {
     CopyVec(fnext,MAX_SPECIES,    f);
     CopyVec(Gnext,MAX_INDIVIDUALS,G);
     CopyVec(Hnext,MAX_METABOLIC,  H);
+
+    //TODO: Make this suitable for GPU
+    // BePositiveAboutThings(f, MAX_SPECIES    );
+    // BePositiveAboutThings(G, MAX_INDIVIDUALS);
+    // BePositiveAboutThings(H, MAX_METABOLIC  );    
   }
 
   void EulerStep(const unsigned int t){
