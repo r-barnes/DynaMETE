@@ -6,6 +6,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include "tps.hpp"
 
 // #include <boost/iostreams/filtering_stream.hpp>
 // #include <boost/iostreams/filter/zlib.hpp>
@@ -31,14 +32,14 @@ class DynaSolver {
   const double Nint                  = 10;            //Number of individuals per individual bin
   const double Eint                  = 100;           //Number of energy units per energy bin
   const double Sint                  = 1;             //Number of species per species bin
-  const unsigned int MAX_TIMESTEP    = 20000;         //Number of timesteps to take
+  const unsigned int MAX_TIMESTEP    = 2000000;       //Number of timesteps to take
   const unsigned int MAX_INDIVIDUALS = 500;           //Number of bins for individuals
   const unsigned int MAX_SPECIES     = 65;            //Number of bins for species
   const unsigned int MAX_METABOLIC   = 3240;          //Number of bins for energy
-  const unsigned int SAVE_EVERY_N    = 100;           //How many timesteps between saves
+  const unsigned int SAVE_EVERY_N    = 2000;           //How many timesteps between saves
   const unsigned int PROGRESS_INT    = 1000;          //How often to print a progress update
 
-  const double h = 1;                                 //Size of timestep
+  const double h = 0.1;                                 //Size of timestep
 
   typedef double ftype;
   typedef ftype* dvec;
@@ -606,17 +607,18 @@ class DynaSolver {
   }
 
   void run() {
+    TimePerSecond tps;
     MakeSavePoint(0);
     for(unsigned int t=1;t<MAX_TIMESTEP;t++){
       if(t%PROGRESS_INT==0)
-        std::cerr<<"p t = "<<t<<std::endl;
-      RungeKuttaStep(t);
+        std::cerr<<"p t = "<<t<<" "<<tps(t*h)<<std::endl;
+      EulerStep(t);
       GetNormalization(t);
       //Calculate <E>, <N>, <S>
       GetStateAverage(t);
       if(t%SAVE_EVERY_N==0)
-        MakeSavePoint(t);
-    }    
+        MakeSavePoint(t*h);
+    }
   }
 };
 
