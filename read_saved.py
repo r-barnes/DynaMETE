@@ -48,12 +48,35 @@ if len(sys.argv)!=2:
 
 sf = SavedFile(sys.argv[1])
 
+def MatShow(times, mat, log=True):
+  temp   = mat.copy()
+  temp   = temp.transpose() #Fits better since time is longer than bins
+  temp   = np.flipud(temp)
+  fig    = plt.figure()
+  ax     = fig.add_subplot(111)
+  extent = [times[0],times[-1],0,temp.shape[0]]
+  clabel = "Probability"
+  if log:
+    temp   = np.log(temp)/np.log(10)
+    clabel = "log(Probability)"
+  matplotted = ax.matshow(temp, aspect='auto', extent=extent)
+  ax.set_xticks(times)
+  plt.locator_params(axis='x', nbins=10)
+  plt.xticks(rotation=-30)
+  plt.xlabel("Time")
+  plt.ylabel("Bin Number")
+  plt.colorbar(matplotted, label="log(Probability)")
+  plt.show()
+
 raise Exception("Interactive time")
 
-plt.matshow(np.log(sf.f.transpose())/np.log(10), aspect='auto'); plt.colorbar(); plt.show()
-plt.matshow(np.log(sf.G.transpose())/np.log(10), aspect='auto'); plt.colorbar(); plt.show()
-plt.matshow(np.log(sf.H.transpose())/np.log(10), aspect='auto'); plt.colorbar(); plt.show()
+MatShow(list(range(sf.f.shape[0])), sf.f, log=False)
+MatShow(list(range(sf.G.shape[0])), sf.G, log=True)
+MatShow(list(range(sf.H.shape[0])), sf.H, log=True)
 
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
 temp = sf.G.copy()
 temp[temp<1e-3]= 0
 plt.matshow(np.log(temp.transpose())/np.log(10), aspect='auto'); plt.show()
