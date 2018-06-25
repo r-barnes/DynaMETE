@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import gzip
+import matplotlib as mpl        #Used for controlling color
+import matplotlib.colors        #Used for controlling color as well
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -48,7 +50,7 @@ if len(sys.argv)!=2:
 
 sf = SavedFile(sys.argv[1])
 
-def MatShow(times, mat, log=True):
+def MatShow(times, mat, cutoff=None, log=True, show_zeros=True):
   temp   = mat.copy()
   temp   = temp.transpose() #Fits better since time is longer than bins
   temp   = np.flipud(temp)
@@ -56,10 +58,22 @@ def MatShow(times, mat, log=True):
   ax     = fig.add_subplot(111)
   extent = [times[0],times[-1],0,temp.shape[0]]
   clabel = "Probability"
+  if show_zeros:
+    natural_zeros = temp==0
+    natural_zeros = np.ma.masked_where(natural_zeros==False, natural_zeros)
+  if cutoff:
+    cutoffm = np.logical_and(temp!=0,temp<cutoff)
+    cutoffm = np.ma.masked_where(cutoffm==False, cutoffm)
   if log:
     temp   = np.log(temp)/np.log(10)
     clabel = "log(Probability)"
   matplotted = ax.matshow(temp, aspect='auto', extent=extent)
+  if show_zeros:
+    natural_zeros_cmap = mpl.colors.ListedColormap(['black','black'])
+    ax.matshow(natural_zeros, aspect='auto', extent=extent, cmap=natural_zeros_cmap, vmin=0, vmax=1)
+  if cutoff:
+    cutoff_cmap = mpl.colors.ListedColormap(['black','red'])
+    ax.matshow(cutoffm, aspect='auto', extent=extent, cmap=cutoff_cmap, vmin=0, vmax=1)    
   ax.set_xticks(times)
   plt.locator_params(axis='x', nbins=10)
   plt.xticks(rotation=-30)
@@ -67,18 +81,25 @@ def MatShow(times, mat, log=True):
   plt.ylabel("Bin Number")
   plt.colorbar(matplotted, label="log(Probability)")
   plt.show()
+  return natural_zeros
 
 raise Exception("Interactive time")
 
-MatShow(list(range(sf.f.shape[0])), sf.f, log=False)
-MatShow(list(range(sf.G.shape[0])), sf.G, log=True)
-MatShow(list(range(sf.H.shape[0])), sf.H, log=True)
+MatShow(list(range(sf.f.shape[0])), sf.f, log=False, cutoff=1e-3)
+MatShow(list(range(sf.G.shape[0])), sf.G, log=True, cutoff=1e-3)
+MatShow(list(range(sf.H.shape[0])), sf.H, log=True, cutoff=1e-3)
 
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
 temp = sf.G.copy()
-temp[temp<1e-3]= 0
+temp_masked = np.ma.masked_where(temp==0, temp, copy=True)
+temp_masked[temp_masked==0] = np.nan
+#temp[temp<1e-3]= 0
+ax.matshow(temp.transpose(), aspect='auto');
+ax.matshow(temp_masked.transpose(), aspect='auto', cmap='Greys');
+plt.show()
+
 plt.matshow(np.log(temp.transpose())/np.log(10), aspect='auto'); plt.show()
 
 plt.matshow(np.log(sf.H.transpose())/np.log(10), aspect='auto'); plt.show()
